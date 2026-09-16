@@ -12,10 +12,27 @@ export default defineConfig({
   },
   vite: {
     build: {
-      // Suppress chunk size warnings — large chunks here are third-party
-      // libraries (tanstack-router, framer-motion, supabase-auth) that
-      // cannot be split further. Gzip sizes are well within browser limits.
       chunkSizeWarningLimit: 700,
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (id.includes("node_modules")) {
+              if (id.includes("@supabase")) {
+                return "vendor-supabase";
+              }
+              if (id.includes("lucide-react")) {
+                return "vendor-icons";
+              }
+              if (id.includes("framer-motion") || id.includes("motion")) {
+                return "vendor-motion";
+              }
+              if (id.includes("@radix-ui")) {
+                return "vendor-radix";
+              }
+            }
+          },
+        },
+      },
     },
   },
 });
