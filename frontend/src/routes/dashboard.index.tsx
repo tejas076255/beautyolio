@@ -5,7 +5,6 @@ import {
   ArrowRight,
   CheckCircle2,
   Clock,
-  ExternalLink,
   Inbox,
   Image,
   Layers,
@@ -125,27 +124,13 @@ function DashboardOverviewPage() {
   return (
     <div className="mx-auto max-w-5xl space-y-6">
       {/* Header */}
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="font-display text-2xl font-semibold">
-            {profile?.display_name ? `Welcome back, ${profile.display_name.split(" ")[0]}` : "Dashboard"}
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Here's how your BeautyFolio is performing today.
-          </p>
-        </div>
-        {profile?.slug && (
-          <Link
-            to="/portfolio/$slug"
-            params={{ slug: profile.slug }}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-2 text-sm font-medium text-muted-foreground shadow-sm hover:text-foreground"
-          >
-            <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
-            View Public Portfolio
-          </Link>
-        )}
+      <div>
+        <h1 className="font-display text-2xl font-semibold">
+          {profile?.display_name ? `Welcome back, ${profile.display_name.split(" ")[0]}` : "Dashboard"}
+        </h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Here's how your BeautyFolio is performing today.
+        </p>
       </div>
 
       {/* Status bar */}

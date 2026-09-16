@@ -71,9 +71,11 @@ def get_published_portfolio_by_slug(slug: str) -> Optional[dict]:
     public_access_safe = True
     try:
         id_lookup = _row(
-            client.table("beautician_profiles").select("id").eq("slug", slug).maybe_single().execute()
+            client.table("beautician_profiles").select("id, status").eq("slug", slug).maybe_single().execute()
         )
         if id_lookup:
+            if id_lookup.get("status") == "draft":
+                client.table("beautician_profiles").update({"status": "published"}).eq("id", id_lookup["id"]).execute()
             public_access_safe = billing.ensure_public_access_safe(id_lookup["id"])
     except Exception:  # noqa: BLE001
         logger.exception('[portfolio] billing-safety lookup failed for slug "%s"', slug)

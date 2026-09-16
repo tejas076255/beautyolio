@@ -15,10 +15,10 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ExpoRouteImport } from './routes/expo'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as RefundPolicyRouteImport } from './routes/refund-policy'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
-import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
@@ -34,9 +34,9 @@ import { Route as DashboardAreasRouteImport } from './routes/dashboard.areas'
 import { Route as DashboardAvailabilityRouteImport } from './routes/dashboard.availability'
 import { Route as DashboardBeforeAfterRouteImport } from './routes/dashboard.before-after'
 import { Route as DashboardBillingRouteImport } from './routes/dashboard.billing'
-import { Route as DashboardInvoiceRouteImport } from './routes/dashboard.invoice'
 import { Route as DashboardFaqsRouteImport } from './routes/dashboard.faqs'
 import { Route as DashboardGalleryRouteImport } from './routes/dashboard.gallery'
+import { Route as DashboardInvoiceRouteImport } from './routes/dashboard.invoice'
 import { Route as DashboardLeadsRouteImport } from './routes/dashboard.leads'
 import { Route as DashboardPackagesRouteImport } from './routes/dashboard.packages'
 import { Route as DashboardProfileRouteImport } from './routes/dashboard.profile'
@@ -79,6 +79,11 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OnboardingRoute = OnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
@@ -97,11 +102,6 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
   path: '/signup',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const OnboardingRoute = OnboardingRouteImport.update({
-  id: '/onboarding',
-  path: '/onboarding',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TermsRoute = TermsRouteImport.update({
@@ -174,11 +174,6 @@ const DashboardBillingRoute = DashboardBillingRouteImport.update({
   path: '/billing',
   getParentRoute: () => DashboardRoute,
 } as any)
-const DashboardInvoiceRoute = DashboardInvoiceRouteImport.update({
-  id: '/invoice',
-  path: '/invoice',
-  getParentRoute: () => DashboardRoute,
-} as any)
 const DashboardFaqsRoute = DashboardFaqsRouteImport.update({
   id: '/faqs',
   path: '/faqs',
@@ -187,6 +182,11 @@ const DashboardFaqsRoute = DashboardFaqsRouteImport.update({
 const DashboardGalleryRoute = DashboardGalleryRouteImport.update({
   id: '/gallery',
   path: '/gallery',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardInvoiceRoute = DashboardInvoiceRouteImport.update({
+  id: '/invoice',
+  path: '/invoice',
   getParentRoute: () => DashboardRoute,
 } as any)
 const DashboardLeadsRoute = DashboardLeadsRouteImport.update({
@@ -253,10 +253,10 @@ export interface FileRoutesByFullPath {
   '/expo': typeof ExpoRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
+  '/onboarding': typeof OnboardingRoute
   '/privacy': typeof PrivacyRoute
   '/refund-policy': typeof RefundPolicyRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/onboarding': typeof OnboardingRoute
   '/signup': typeof SignupRoute
   '/terms': typeof TermsRoute
   '/admin/audit-logs': typeof AdminAuditLogsRoute
@@ -270,9 +270,9 @@ export interface FileRoutesByFullPath {
   '/dashboard/availability': typeof DashboardAvailabilityRoute
   '/dashboard/before-after': typeof DashboardBeforeAfterRoute
   '/dashboard/billing': typeof DashboardBillingRoute
-  '/dashboard/invoice': typeof DashboardInvoiceRoute
   '/dashboard/faqs': typeof DashboardFaqsRoute
   '/dashboard/gallery': typeof DashboardGalleryRoute
+  '/dashboard/invoice': typeof DashboardInvoiceRoute
   '/dashboard/leads': typeof DashboardLeadsRoute
   '/dashboard/packages': typeof DashboardPackagesRoute
   '/dashboard/profile': typeof DashboardProfileRoute
@@ -284,6 +284,45 @@ export interface FileRoutesByFullPath {
   '/portfolio/$slug': typeof PortfolioSlugRoute
   '/admin/': typeof AdminIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
+  '/admin/beauticians/$slug': typeof AdminBeauticiansSlugRoute
+  '/portfolio/$slug/services/$serviceSlug': typeof PortfolioSlugServicesServiceSlugRoute
+}
+export interface FileRoutesByTo {
+  '/': typeof IndexRoute
+  '/expo': typeof ExpoRoute
+  '/forgot-password': typeof ForgotPasswordRoute
+  '/login': typeof LoginRoute
+  '/onboarding': typeof OnboardingRoute
+  '/privacy': typeof PrivacyRoute
+  '/refund-policy': typeof RefundPolicyRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/signup': typeof SignupRoute
+  '/terms': typeof TermsRoute
+  '/admin/audit-logs': typeof AdminAuditLogsRoute
+  '/admin/leads': typeof AdminLeadsRoute
+  '/admin/profiles': typeof AdminProfilesRoute
+  '/admin/reviews': typeof AdminReviewsRoute
+  '/admin/services': typeof AdminServicesRoute
+  '/admin/sources': typeof AdminSourcesRoute
+  '/admin/users': typeof AdminUsersRoute
+  '/dashboard/areas': typeof DashboardAreasRoute
+  '/dashboard/availability': typeof DashboardAvailabilityRoute
+  '/dashboard/before-after': typeof DashboardBeforeAfterRoute
+  '/dashboard/billing': typeof DashboardBillingRoute
+  '/dashboard/faqs': typeof DashboardFaqsRoute
+  '/dashboard/gallery': typeof DashboardGalleryRoute
+  '/dashboard/invoice': typeof DashboardInvoiceRoute
+  '/dashboard/leads': typeof DashboardLeadsRoute
+  '/dashboard/packages': typeof DashboardPackagesRoute
+  '/dashboard/profile': typeof DashboardProfileRoute
+  '/dashboard/reviews': typeof DashboardReviewsRoute
+  '/dashboard/seo': typeof DashboardSeoRoute
+  '/dashboard/services': typeof DashboardServicesRoute
+  '/dashboard/settings': typeof DashboardSettingsRoute
+  '/dashboard/videos': typeof DashboardVideosRoute
+  '/portfolio/$slug': typeof PortfolioSlugRoute
+  '/admin': typeof AdminIndexRoute
+  '/dashboard': typeof DashboardIndexRoute
   '/admin/beauticians/$slug': typeof AdminBeauticiansSlugRoute
   '/portfolio/$slug/services/$serviceSlug': typeof PortfolioSlugServicesServiceSlugRoute
 }
@@ -299,7 +338,6 @@ export interface FileRoutesById {
   '/privacy': typeof PrivacyRoute
   '/refund-policy': typeof RefundPolicyRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/onboarding': typeof OnboardingRoute
   '/signup': typeof SignupRoute
   '/terms': typeof TermsRoute
   '/admin/audit-logs': typeof AdminAuditLogsRoute
@@ -313,9 +351,9 @@ export interface FileRoutesById {
   '/dashboard/availability': typeof DashboardAvailabilityRoute
   '/dashboard/before-after': typeof DashboardBeforeAfterRoute
   '/dashboard/billing': typeof DashboardBillingRoute
-  '/dashboard/invoice': typeof DashboardInvoiceRoute
   '/dashboard/faqs': typeof DashboardFaqsRoute
   '/dashboard/gallery': typeof DashboardGalleryRoute
+  '/dashboard/invoice': typeof DashboardInvoiceRoute
   '/dashboard/leads': typeof DashboardLeadsRoute
   '/dashboard/packages': typeof DashboardPackagesRoute
   '/dashboard/profile': typeof DashboardProfileRoute
@@ -356,9 +394,9 @@ export interface FileRouteTypes {
     | '/dashboard/availability'
     | '/dashboard/before-after'
     | '/dashboard/billing'
-    | '/dashboard/invoice'
     | '/dashboard/faqs'
     | '/dashboard/gallery'
+    | '/dashboard/invoice'
     | '/dashboard/leads'
     | '/dashboard/packages'
     | '/dashboard/profile'
@@ -378,10 +416,10 @@ export interface FileRouteTypes {
     | '/expo'
     | '/forgot-password'
     | '/login'
+    | '/onboarding'
     | '/privacy'
     | '/refund-policy'
     | '/reset-password'
-    | '/onboarding'
     | '/signup'
     | '/terms'
     | '/admin/audit-logs'
@@ -395,9 +433,9 @@ export interface FileRouteTypes {
     | '/dashboard/availability'
     | '/dashboard/before-after'
     | '/dashboard/billing'
-    | '/dashboard/invoice'
     | '/dashboard/faqs'
     | '/dashboard/gallery'
+    | '/dashboard/invoice'
     | '/dashboard/leads'
     | '/dashboard/packages'
     | '/dashboard/profile'
@@ -419,10 +457,10 @@ export interface FileRouteTypes {
     | '/expo'
     | '/forgot-password'
     | '/login'
+    | '/onboarding'
     | '/privacy'
     | '/refund-policy'
     | '/reset-password'
-    | '/onboarding'
     | '/signup'
     | '/terms'
     | '/admin/audit-logs'
@@ -436,9 +474,9 @@ export interface FileRouteTypes {
     | '/dashboard/availability'
     | '/dashboard/before-after'
     | '/dashboard/billing'
-    | '/dashboard/invoice'
     | '/dashboard/faqs'
     | '/dashboard/gallery'
+    | '/dashboard/invoice'
     | '/dashboard/leads'
     | '/dashboard/packages'
     | '/dashboard/profile'
@@ -515,6 +553,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/onboarding': {
+      id: '/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/privacy': {
       id: '/privacy'
       path: '/privacy'
@@ -534,13 +579,6 @@ declare module '@tanstack/react-router' {
       path: '/reset-password'
       fullPath: '/reset-password'
       preLoaderRoute: typeof ResetPasswordRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/onboarding': {
-      id: '/onboarding'
-      path: '/onboarding'
-      fullPath: '/onboarding'
-      preLoaderRoute: typeof OnboardingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/signup': {
@@ -648,13 +686,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardBillingRouteImport
       parentRoute: typeof DashboardRoute
     }
-    '/dashboard/invoice': {
-      id: '/dashboard/invoice'
-      path: '/invoice'
-      fullPath: '/dashboard/invoice'
-      preLoaderRoute: typeof DashboardInvoiceRouteImport
-      parentRoute: typeof DashboardRoute
-    }
     '/dashboard/faqs': {
       id: '/dashboard/faqs'
       path: '/faqs'
@@ -667,6 +698,13 @@ declare module '@tanstack/react-router' {
       path: '/gallery'
       fullPath: '/dashboard/gallery'
       preLoaderRoute: typeof DashboardGalleryRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/invoice': {
+      id: '/dashboard/invoice'
+      path: '/invoice'
+      fullPath: '/dashboard/invoice'
+      preLoaderRoute: typeof DashboardInvoiceRouteImport
       parentRoute: typeof DashboardRoute
     }
     '/dashboard/leads': {
@@ -780,9 +818,9 @@ interface DashboardRouteChildren {
   DashboardAvailabilityRoute: typeof DashboardAvailabilityRoute
   DashboardBeforeAfterRoute: typeof DashboardBeforeAfterRoute
   DashboardBillingRoute: typeof DashboardBillingRoute
-  DashboardInvoiceRoute: typeof DashboardInvoiceRoute
   DashboardFaqsRoute: typeof DashboardFaqsRoute
   DashboardGalleryRoute: typeof DashboardGalleryRoute
+  DashboardInvoiceRoute: typeof DashboardInvoiceRoute
   DashboardLeadsRoute: typeof DashboardLeadsRoute
   DashboardPackagesRoute: typeof DashboardPackagesRoute
   DashboardProfileRoute: typeof DashboardProfileRoute
@@ -799,9 +837,9 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardAvailabilityRoute: DashboardAvailabilityRoute,
   DashboardBeforeAfterRoute: DashboardBeforeAfterRoute,
   DashboardBillingRoute: DashboardBillingRoute,
-  DashboardInvoiceRoute: DashboardInvoiceRoute,
   DashboardFaqsRoute: DashboardFaqsRoute,
   DashboardGalleryRoute: DashboardGalleryRoute,
+  DashboardInvoiceRoute: DashboardInvoiceRoute,
   DashboardLeadsRoute: DashboardLeadsRoute,
   DashboardPackagesRoute: DashboardPackagesRoute,
   DashboardProfileRoute: DashboardProfileRoute,

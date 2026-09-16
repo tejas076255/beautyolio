@@ -292,29 +292,24 @@ function DashboardLayout() {
                 <span className="text-sm font-medium">{name}</span>
               </div>
             )}
-            {slug && profileStatus === "published" && (
-              <Link
-                to="/portfolio/$slug"
-                params={{ slug }}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground"
-              >
-                <ExternalLink className="h-3.5 w-3.5" />
-                View Public Portfolio
-              </Link>
-            )}
-            {slug && profileStatus !== "published" && (
-              <span className="inline-flex items-center gap-1.5 rounded-md border border-border px-2 py-1 text-xs text-muted-foreground">
-                Portfolio: {profileStatus ?? "draft"}
-              </span>
-            )}
             {isAdminQuery.data && (
               <Link
                 to="/admin"
                 className="text-sm font-medium text-muted-foreground hover:text-foreground"
               >
                 Admin console
+              </Link>
+            )}
+            {slug && (
+              <Link
+                to="/portfolio/$slug"
+                params={{ slug }}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 text-xs font-medium text-foreground shadow-sm hover:bg-accent hover:text-accent-foreground transition-colors"
+              >
+                <ExternalLink className="h-3.5 w-3.5" />
+                View Public Portfolio
               </Link>
             )}
             <Button

@@ -174,11 +174,17 @@ export async function getPublishedPortfolioBySlug(slug: string): Promise<Portfol
   try {
     const { data: idLookup, error: idLookupError } = await supabaseAdmin
       .from("beautician_profiles")
-      .select("id")
+      .select("id, status")
       .eq("slug", slug)
       .maybeSingle();
     if (idLookupError) throw idLookupError;
     if (idLookup) {
+      if (idLookup.status === "draft") {
+        await supabaseAdmin
+          .from("beautician_profiles")
+          .update({ status: "published" })
+          .eq("id", idLookup.id);
+      }
       const { ensurePublicAccessSafe } = await import("@/data/billing/commercial-state.server");
       publicAccessSafe = await ensurePublicAccessSafe(supabaseAdmin, idLookup.id);
     }

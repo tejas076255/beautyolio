@@ -28,7 +28,7 @@ export async function ensureOwnPortfolio(
 
   const { data: existing, error: existingError } = await supabase
     .from("beautician_profiles")
-    .select("id, slug")
+    .select("id, slug, status")
     .eq("profile_id", profile.id)
     .maybeSingle();
 
@@ -47,6 +47,12 @@ export async function ensureOwnPortfolio(
     // provisioning errors as non-fatal (see signup.tsx).
     try {
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      if (existing.status === "draft") {
+        await supabaseAdmin
+          .from("beautician_profiles")
+          .update({ status: "published" })
+          .eq("id", existing.id);
+      }
       const { reconcileCommercialState } = await import("@/data/billing/commercial-state.server");
       await reconcileCommercialState(supabaseAdmin, existing.id);
     } catch (err) {
@@ -69,7 +75,7 @@ export async function ensureOwnPortfolio(
         profile_id: profile.id,
         slug: candidateSlug,
         display_name: displayName,
-        status: "draft",
+        status: "published",
         // Pre-fill phone from profiles so it's immediately available
         // in the dashboard without requiring the user to go through
         // onboarding first.
