@@ -307,14 +307,14 @@ export function PortfolioHeroSection({ profile }: P) {
               height={1100}
               fetchPriority="high"
               decoding="async"
-              className="aspect-[4/5] w-full rounded-3xl object-cover object-top shadow-lift sm:aspect-auto sm:object-center"
+              className="aspect-[4/5] w-full rounded-3xl object-cover object-top shadow-lift"
             />
           ) : (
             // Genuine no-photo state (Phase 3F.9A) — never a fabricated
             // fallback photo. Matches the dashboard's own "No photo" circle
             // language, scaled up for the hero frame.
             <div
-              className="bg-gradient-brand flex aspect-[4/5] w-full items-center justify-center rounded-3xl shadow-lift sm:aspect-auto"
+              className="bg-gradient-brand flex aspect-[4/5] w-full items-center justify-center rounded-3xl shadow-lift"
               role="img"
               aria-label={`${profile.name}, ${profile.role} in ${profile.primaryCity}`}
             >
