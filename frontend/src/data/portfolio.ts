@@ -166,6 +166,8 @@ export interface BeauticianProfile {
     appointmentType: "studio" | "client_location" | "both";
     travelAvailable: boolean;
     blockedDates: string[];
+    blockedDateItems?: { date: string; reason: string | null }[];
+    workingHoursNote?: string | null;
   };
 }
 

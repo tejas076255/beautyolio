@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Calendar,
+  CalendarX,
   Check,
   ChevronDown,
   ChevronLeft,
@@ -1515,6 +1516,8 @@ export function AvailabilitySection({
   const allServiceItems = profile.serviceGroups.flatMap((g) => g.items);
   const allServices = allServiceItems.map((i) => i.name);
   const acceptingBookings = profile.availability.acceptingBookings;
+  const isBlocked = !!(date && profile.availability.blockedDates?.includes(date));
+  const blockedItem = profile.availability.blockedDateItems?.find((b) => b.date === date);
   const eligibility = computeAvailabilityEligibility(date, profile.availability);
 
   // Advisory only — a location outside the listed service areas should never
@@ -1549,6 +1552,16 @@ export function AvailabilitySection({
             sub={`Planning your wedding? Check whether ${profile.name.split(" ")[0]} is available for your date.`}
             center={false}
           />
+
+          {profile.availability.workingHoursNote && (
+            <div className="mt-4 flex items-start gap-3 rounded-2xl border border-primary/20 bg-card p-3.5 text-xs sm:text-sm text-foreground shadow-soft">
+              <Clock className="h-4 w-4 shrink-0 text-primary mt-0.5" aria-hidden="true" />
+              <div>
+                <strong className="block font-semibold text-primary">Notice & Working Hours</strong>
+                <p className="mt-0.5 text-muted-foreground">{profile.availability.workingHoursNote}</p>
+              </div>
+            </div>
+          )}
 
           {sent ? (
             // Phase 3G.1 §5/§31 — the form previously stayed on screen
@@ -1619,6 +1632,12 @@ export function AvailabilitySection({
               onSubmit={async (e) => {
                 e.preventDefault();
                 setError(null);
+                if (isBlocked) {
+                  setError(
+                    `Bookings are closed on ${date} (${blockedItem?.reason || "Holiday / Closed"}). Please select another date.`,
+                  );
+                  return;
+                }
                 // Phase 3G.3 §13 — represents a genuine submit attempt,
                 // regardless of whether client validation then blocks it.
                 trackEvent(AnalyticsEvent.AvailabilityFormSubmit, {
@@ -1763,15 +1782,47 @@ export function AvailabilitySection({
                     required
                     className={field}
                   />
-                  {eligibility && (
-                    <p
-                      className={cn(
-                        "mt-1.5 text-xs",
-                        eligibility === "ok" ? "text-emerald-600" : "text-amber-600",
-                      )}
-                    >
-                      {ELIGIBILITY_MESSAGE[eligibility]}
-                    </p>
+                  {isBlocked ? (
+                    <div className="mt-2 flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/10 p-2.5 text-xs text-destructive">
+                      <CalendarX className="h-4 w-4 shrink-0 mt-0.5" aria-hidden="true" />
+                      <div>
+                        <p className="font-semibold">
+                          Unavailable ({blockedItem?.reason || "Holiday / Closed"})
+                        </p>
+                        <p className="mt-0.5 text-destructive/90">
+                          {profile.name.split(" ")[0]} is on leave / closed on this date. Booking is disabled for this date. Please select another date.
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    eligibility && (
+                      <p
+                        className={cn(
+                          "mt-1.5 text-xs",
+                          eligibility === "ok" ? "text-emerald-600" : "text-amber-600",
+                        )}
+                      >
+                        {ELIGIBILITY_MESSAGE[eligibility]}
+                      </p>
+                    )
+                  )}
+                  {profile.availability.blockedDateItems && profile.availability.blockedDateItems.length > 0 && (
+                    <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[11px] text-muted-foreground">
+                      <span className="font-medium">Closed dates:</span>
+                      {profile.availability.blockedDateItems.slice(0, 3).map((b) => (
+                        <span
+                          key={b.date}
+                          className="inline-flex items-center gap-1 rounded bg-secondary px-1.5 py-0.5 text-secondary-foreground"
+                        >
+                          <CalendarX className="h-3 w-3 text-destructive" />
+                          {new Date(`${b.date}T00:00:00`).toLocaleDateString("en-IN", {
+                            day: "numeric",
+                            month: "short",
+                          })}
+                          {b.reason ? ` (${b.reason})` : ""}
+                        </span>
+                      ))}
+                    </div>
                   )}
                 </label>
                 <label className="text-sm">
@@ -1848,9 +1899,9 @@ export function AvailabilitySection({
                   variant="hero"
                   size="lg"
                   className="sm:flex-1"
-                  disabled={submitting}
+                  disabled={submitting || isBlocked}
                 >
-                  <Calendar aria-hidden="true" /> {submitting ? "Sending…" : "Check availability"}
+                  <Calendar aria-hidden="true" /> {submitting ? "Sending…" : isBlocked ? "Date unavailable (Closed)" : "Check availability"}
                 </Button>
                 <Button variant="softline" size="lg" asChild className="sm:flex-1">
                   <a href={enquiry} target="_blank" rel="noreferrer">

@@ -594,10 +594,10 @@ export function AvailabilityManager({
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
                 <NotebookPen className="h-4 w-4 text-primary" aria-hidden="true" />
-                Additional notes
+                Working hours note & temporary breaks
               </CardTitle>
               <CardDescription>
-                Optional context shown alongside booking rules — e.g. "By appointment only."
+                Add break notices, afternoon pause times, or special working hours shown prominently on your portfolio.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -606,13 +606,16 @@ export function AvailabilityManager({
                 name="working_hours_note"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Working hours note (optional)</FormLabel>
+                    <FormLabel>Working hours / Break notice (optional)</FormLabel>
                     <FormControl>
-                      <Textarea rows={3} placeholder="Mon–Sat, 10am–7pm" {...field} />
+                      <Textarea
+                        rows={3}
+                        placeholder="e.g. Break today 2:00 PM – 4:00 PM, reopens at 4 PM / Mon–Sat 10am–7pm / By appointment only"
+                        {...field}
+                      />
                     </FormControl>
                     <FormDescription>
-                      Separate from the day-by-day hours above; adds any extra context clients
-                      should know.
+                      This notice will be displayed at the top of your portfolio availability section so clients immediately see your current break or working hours.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>

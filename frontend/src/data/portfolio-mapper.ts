@@ -223,6 +223,11 @@ export function mapPortfolioBundleToProfile(bundle: PortfolioBundle): Beautician
         ?.appointment_type as BeauticianProfile["availability"]["appointmentType"]) ?? "both",
     travelAvailable: bundle.availability?.travel_available ?? false,
     blockedDates: bundle.blockedDates.map((b) => b.blocked_date),
+    blockedDateItems: bundle.blockedDates.map((b) => ({
+      date: b.blocked_date,
+      reason: b.reason ?? null,
+    })),
+    workingHoursNote: bundle.availability?.working_hours_note ?? null,
   };
 
   const areas = bundle.serviceAreas.map((a) => a.area_name ?? a.city);
