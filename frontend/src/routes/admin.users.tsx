@@ -88,6 +88,7 @@ function UsersPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Name</TableHead>
+                <TableHead>Phone</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Roles</TableHead>
                 <TableHead>Joined</TableHead>
@@ -101,7 +102,8 @@ function UsersPage() {
                 return (
                   <TableRow key={user.authUserId}>
                     <TableCell className="font-medium">{user.displayName || "—"}</TableCell>
-                    <TableCell className="text-sm text-muted-foreground">{user.email}</TableCell>
+                    <TableCell className="text-sm font-mono">{user.phone || "—"}</TableCell>
+                    <TableCell className="text-sm text-muted-foreground">{user.email || "—"}</TableCell>
                     <TableCell>
                       <div className="flex flex-wrap gap-1.5">
                         {user.roles.map((role) => (
@@ -123,7 +125,7 @@ function UsersPage() {
                           onClick={() => {
                             if (
                               window.confirm(
-                                `Revoke admin access for ${user.displayName || user.email}?`,
+                                `Revoke admin access for ${user.displayName || user.phone || user.email || "this user"}?`,
                               )
                             )
                               revoke.mutate(user.authUserId);

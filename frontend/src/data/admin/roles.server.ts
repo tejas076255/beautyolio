@@ -8,6 +8,7 @@ export type AdminUserSummary = {
   authUserId: string;
   displayName: string | null;
   email: string | null;
+  phone: string | null;
   createdAt: string;
   roles: Database["public"]["Enums"]["app_role"][];
 };
@@ -19,7 +20,7 @@ export async function listUsersWithRoles(
   await assertIsAdmin(supabase, userId);
 
   const [profilesRes, rolesRes] = await Promise.all([
-    supabase.from("profiles").select("auth_user_id, display_name, email, created_at"),
+    supabase.from("profiles").select("auth_user_id, display_name, email, phone, created_at"),
     supabase.from("user_roles").select("user_id, role"),
   ]);
 
@@ -34,13 +35,24 @@ export async function listUsersWithRoles(
   }
 
   return (profilesRes.data ?? [])
-    .map((profile) => ({
-      authUserId: profile.auth_user_id,
-      displayName: profile.display_name,
-      email: profile.email,
-      createdAt: profile.created_at,
-      roles: rolesByUser.get(profile.auth_user_id) ?? [],
-    }))
+    .map((profile) => {
+      const isInternalEmail = profile.email?.endsWith("@beuati.app") ?? false;
+      const phone =
+        profile.phone ||
+        (isInternalEmail && profile.email
+          ? `+${profile.email.split("@")[0]}`
+          : null);
+      const email = isInternalEmail ? null : profile.email;
+
+      return {
+        authUserId: profile.auth_user_id,
+        displayName: profile.display_name,
+        email,
+        phone,
+        createdAt: profile.created_at,
+        roles: rolesByUser.get(profile.auth_user_id) ?? [],
+      };
+    })
     .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
 }
 

@@ -3,7 +3,18 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ChevronLeft, ChevronRight, Search } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Compass,
+  Crown,
+  Gem,
+  Pencil,
+  Search,
+  Sparkles,
+  TrendingUp,
+  XCircle,
+} from "lucide-react";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { Badge } from "@/components/ui/badge";
@@ -31,6 +42,14 @@ import { getMilestone, MILESTONE_BANDS } from "@/lib/completion-score";
 export const Route = createFileRoute("/admin/profiles")({
   component: ProfilesPage,
 });
+
+const PLAN_ICONS: Record<PortfolioPlan, React.ComponentType<{ className?: string }>> = {
+  free: Sparkles,
+  starter: Compass,
+  silver: TrendingUp,
+  gold: Crown,
+  platinum: Gem,
+};
 
 // ---------- known signup sources ----------
 export const SIGNUP_SOURCES = [
@@ -272,21 +291,29 @@ function ProfilesPage() {
 
       {/* ── Plan stat cards ────────────────────────────────────────────── */}
       <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-        {(["free", "starter", "silver", "gold", "platinum"] as PortfolioPlan[]).map((plan) => (
-          <button
-            key={plan}
-            type="button"
-            onClick={() => { setPlanFilter(planFilter === plan ? ALL : plan); resetPage(); }}
-            className={`rounded-2xl border p-4 text-left shadow-soft transition-all hover:border-primary/40 ${
-              planFilter === plan
-                ? "border-primary/60 bg-primary/5"
-                : "border-border bg-card"
-            }`}
-          >
-            <p className="text-xs text-muted-foreground">{PLAN_LABELS[plan]}</p>
-            <p className="mt-1 text-2xl font-semibold">{planCounts[plan]}</p>
-          </button>
-        ))}
+        {(["free", "starter", "silver", "gold", "platinum"] as PortfolioPlan[]).map((plan) => {
+          const Icon = PLAN_ICONS[plan];
+          return (
+            <button
+              key={plan}
+              type="button"
+              onClick={() => { setPlanFilter(planFilter === plan ? ALL : plan); resetPage(); }}
+              className={`rounded-2xl border p-4 text-left shadow-soft transition-all hover:border-primary/40 ${
+                planFilter === plan
+                  ? "border-primary/60 bg-primary/5"
+                  : "border-border bg-card"
+              }`}
+            >
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-xs text-muted-foreground">{PLAN_LABELS[plan]}</p>
+                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                  <Icon className="h-3.5 w-3.5" />
+                </div>
+              </div>
+              <p className="mt-1.5 text-2xl font-semibold">{planCounts[plan]}</p>
+            </button>
+          );
+        })}
       </div>
 
       {/* ── Search ────────────────────────────────────────────────────── */}
@@ -446,7 +473,7 @@ function ProfilesPage() {
                   <TableHead className="text-xs">Status</TableHead>
                   <TableHead className="text-xs">Billing</TableHead>
                   <TableHead className="text-xs">Due</TableHead>
-                  <TableHead />
+                  <TableHead className="text-xs text-right">Manage</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -606,13 +633,40 @@ function ProfilesPage() {
                         : "—"}
                     </TableCell>
 
-                    {/* Manage link */}
+                    {/* Manage actions: Edit & Cancel */}
                     <TableCell>
-                      <Button variant="softline" size="sm" asChild className="text-xs">
-                        <Link to="/admin/beauticians/$slug" params={{ slug: profile.slug }}>
-                          Manage
-                        </Link>
-                      </Button>
+                      <div className="flex items-center justify-end gap-1.5">
+                        <Button variant="softline" size="sm" asChild className="h-7 gap-1 px-2.5 text-xs">
+                          <Link to="/admin/beauticians/$slug" params={{ slug: profile.slug }}>
+                            <Pencil className="h-3 w-3" />
+                            Edit
+                          </Link>
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          disabled={updateStatus.isPending}
+                          onClick={() => {
+                            if (profile.status === "suspended") {
+                              if (window.confirm(`Reactivate portfolio for ${profile.display_name}?`)) {
+                                updateStatus.mutate({ profileId: profile.id, status: "published" });
+                              }
+                            } else {
+                              if (
+                                window.confirm(
+                                  `Are you sure you want to cancel/suspend portfolio for ${profile.display_name}?`,
+                                )
+                              ) {
+                                updateStatus.mutate({ profileId: profile.id, status: "suspended" });
+                              }
+                            }
+                          }}
+                          className="h-7 gap-1 px-2 text-xs text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                        >
+                          <XCircle className="h-3 w-3" />
+                          Cancel
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
