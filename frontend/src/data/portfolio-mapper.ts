@@ -282,11 +282,18 @@ export function mapPortfolioBundleToProfile(bundle: PortfolioBundle): Beautician
     specializations: specializationNames,
     areas,
     travelNote: profile.travel_note ?? "",
-    phone: profile.phone ?? "",
-    whatsapp: (profile.whatsapp_number ?? "").replace(/\D/g, ""),
+    phone: profile.phone || profile.whatsapp_number || "",
+    whatsapp: (profile.whatsapp_number || profile.phone || "").replace(/\D/g, ""),
     email: profile.email ?? "",
-    studio: profile.address ?? "",
-    hours: profile.working_hours ?? "",
+    studio:
+      profile.address?.trim() ||
+      [profile.locality, profile.primary_city].filter(Boolean).join(", ") ||
+      profile.primary_city ||
+      "",
+    hours:
+      profile.working_hours?.trim() ||
+      bundle.availability?.working_hours_note?.trim() ||
+      "Mon – Sat: 10:00 AM – 7:00 PM",
     mapQuery:
       profile.map_query ?? [profile.locality, profile.primary_city].filter(Boolean).join(", "),
     trustBar,

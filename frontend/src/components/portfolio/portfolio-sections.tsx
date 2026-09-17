@@ -1929,13 +1929,20 @@ export function AvailabilitySection({
                 id: "phone",
                 icon: Phone,
                 label: profile.phone,
-                href: telLink(profile),
+                href: profile.phone ? telLink(profile) : undefined,
                 onClick: () => trackPhoneClick(profile, CtaLocation.ContactSection),
               },
-              { id: "email", icon: Mail, label: profile.email, href: `mailto:${profile.email}` },
+              {
+                id: "email",
+                icon: Mail,
+                label: profile.email,
+                href: profile.email ? `mailto:${profile.email}` : undefined,
+              },
               { id: "studio", icon: MapPin, label: profile.studio },
               { id: "hours", icon: Clock, label: profile.hours },
-            ].map(({ id, icon: Icon, label, href, onClick }) => (
+            ]
+              .filter(({ label }) => Boolean(label && label.trim()))
+              .map(({ id, icon: Icon, label, href, onClick }) => (
               <li
                 key={id}
                 className="flex items-start gap-3 rounded-2xl border border-border bg-card px-4 py-3.5 shadow-soft"
