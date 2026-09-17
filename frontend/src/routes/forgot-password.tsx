@@ -1,12 +1,15 @@
 import { useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createServerFn } from "@tanstack/react-start";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { toast } from "sonner";
+import { CheckCircle2, Phone, User } from "lucide-react";
 
-import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import {
   Form,
@@ -18,94 +21,205 @@ import {
 } from "@/components/ui/form";
 
 export const Route = createFileRoute("/forgot-password")({
-  // Auth page — never indexed. No shared layout route exists for
-  // login/signup/forgot-password/reset-password, so each carries its own
-  // identical head() rather than introducing a new layout route for it.
   head: () => ({
     meta: [{ name: "robots", content: "noindex, nofollow" }],
   }),
   component: ForgotPasswordPage,
 });
 
-const forgotPasswordSchema = z.object({
-  email: z.string().email("Enter a valid email address"),
-});
-
-function ForgotPasswordPage() {
-  const [submitted, setSubmitted] = useState(false);
-  const form = useForm<z.infer<typeof forgotPasswordSchema>>({
-    resolver: zodResolver(forgotPasswordSchema),
-    defaultValues: { email: "" },
+const resetPasswordFn = createServerFn({ method: "POST" })
+  .validator((data: { phone: string; name: string; newPassword: string }) => data)
+  .handler(async ({ data }) => {
+    const { resetPasswordWithoutOtp } = await import("@/data/auth/password-reset.server");
+    return resetPasswordWithoutOtp(data);
   });
 
-  const onSubmit = async (values: z.infer<typeof forgotPasswordSchema>) => {
-    // redirectTo is always derived from the current origin — never accepted
-    // from a query param or any other caller-suppliable input, closing the
-    // open-redirect vector regardless of what Supabase's own allowlist does.
-    const redirectTo = `${window.location.origin}/reset-password`;
-    const { error } = await supabase.auth.resetPasswordForEmail(values.email, { redirectTo });
-    if (error) {
-      // Never surfaced to the user — showing the same generic message
-      // whether or not this call actually found a matching account is the
-      // whole point of this flow (Supabase's own API is designed the same
-      // way: it does not report success/failure differently for an
-      // unknown email). Logged only for local debugging.
-      console.error("[forgot-password] resetPasswordForEmail failed", error);
+const forgotPasswordSchema = z
+  .object({
+    phone: z
+      .string()
+      .min(10, "Enter a valid 10-digit phone number")
+      .regex(/^[0-9+\s\-()]+$/, "Enter a valid phone number"),
+    name: z.string().min(2, "Enter your registered full name"),
+    password: z.string().min(6, "Password must be at least 6 characters"),
+    confirmPassword: z.string().min(1, "Confirm your new password"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
+
+type ForgotPasswordValues = z.infer<typeof forgotPasswordSchema>;
+
+function ForgotPasswordPage() {
+  const navigate = useNavigate();
+  const [formError, setFormError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+
+  const form = useForm<ForgotPasswordValues>({
+    resolver: zodResolver(forgotPasswordSchema),
+    defaultValues: {
+      phone: "",
+      name: "",
+      password: "",
+      confirmPassword: "",
+    },
+  });
+
+  const onSubmit = async (values: ForgotPasswordValues) => {
+    setFormError(null);
+    try {
+      const res = await resetPasswordFn({
+        data: {
+          phone: values.phone,
+          name: values.name,
+          newPassword: values.password,
+        },
+      });
+      if (res?.success) {
+        toast.success("Password updated successfully!");
+        setSuccess(true);
+        setTimeout(() => {
+          navigate({ to: "/login" });
+        }, 2000);
+      }
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to reset password. Please verify your details.";
+      setFormError(message);
     }
-    // Always the same outcome, regardless of whether the email exists or
-    // the call succeeded — this must never disclose account existence.
-    setSubmitted(true);
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <Card className="w-full max-w-sm">
+    <div className="flex min-h-screen items-center justify-center bg-background px-4 py-8">
+      <Card className="w-full max-w-sm shadow-soft">
         <CardHeader>
           <CardTitle className="text-xl">Reset your password</CardTitle>
           <CardDescription>
-            Enter your account email and we'll send you a link to reset your password.
+            Enter your registered mobile number and name to set a new password instantly.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {submitted ? (
-            <p role="status" className="text-sm text-muted-foreground">
-              If an account is associated with that email, you'll receive instructions to reset your
-              password. Be sure to check your spam folder.{" "}
-              <Link to="/login" className="font-semibold text-primary">
-                Back to sign in
-              </Link>
-              .
-            </p>
+          {success ? (
+            <div className="space-y-4 text-center">
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400">
+                <CheckCircle2 className="h-6 w-6" />
+              </div>
+              <p className="text-sm font-medium text-foreground">
+                Password updated successfully!
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Redirecting you to sign in…
+              </p>
+              <Button variant="hero" asChild className="w-full">
+                <Link to="/login">Sign in now</Link>
+              </Button>
+            </div>
           ) : (
             <>
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                   <FormField
                     control={form.control}
-                    name="email"
+                    name="phone"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Email</FormLabel>
+                        <FormLabel>Registered Phone Number</FormLabel>
                         <FormControl>
-                          <Input type="email" autoComplete="email" {...field} />
+                          <div className="relative">
+                            <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                            <Input
+                              type="tel"
+                              placeholder="e.g. 98653 21452"
+                              autoComplete="tel"
+                              className="pl-9"
+                              {...field}
+                            />
+                          </div>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
+
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Your Registered Full Name</FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                            <Input
+                              type="text"
+                              placeholder="e.g. Priya Sharma"
+                              autoComplete="name"
+                              className="pl-9"
+                              {...field}
+                            />
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>New Password</FormLabel>
+                        <FormControl>
+                          <PasswordInput
+                            placeholder="At least 6 characters"
+                            autoComplete="new-password"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="confirmPassword"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Confirm New Password</FormLabel>
+                        <FormControl>
+                          <PasswordInput
+                            placeholder="Re-enter your new password"
+                            autoComplete="new-password"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {formError && (
+                    <p role="alert" className="rounded-lg bg-destructive/10 p-3 text-xs font-medium text-destructive">
+                      {formError}
+                    </p>
+                  )}
+
                   <Button
                     type="submit"
                     variant="hero"
                     className="w-full"
                     disabled={form.formState.isSubmitting}
                   >
-                    {form.formState.isSubmitting ? "Sending…" : "Send reset link"}
+                    {form.formState.isSubmitting ? "Updating password…" : "Reset Password"}
                   </Button>
                 </form>
               </Form>
+
               <p className="mt-4 text-center text-sm text-muted-foreground">
-                Remembered your password?{" "}
-                <Link to="/login" className="font-semibold text-primary">
+                Remember your password?{" "}
+                <Link to="/login" className="font-semibold text-primary hover:underline">
                   Sign in
                 </Link>
               </p>
