@@ -23,6 +23,9 @@ const description =
   "Create a free SEO-optimized beauty portfolio, rank on Google and local search, and get direct client enquiries with zero marketplace commissions.";
 
 export const Route = createFileRoute("/")({
+  headers: () => ({
+    "Cache-Control": "public, max-age=300, s-maxage=300, stale-while-revalidate=600",
+  }),
   head: () => ({
     meta: [
       { title },

@@ -81,6 +81,7 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
               <Link
                 key={item.to}
                 to={item.to}
+                preload="intent"
                 {...(item.exact ? { activeOptions: { exact: true } } : {})}
                 onClick={onNavigate}
                 className={cn(

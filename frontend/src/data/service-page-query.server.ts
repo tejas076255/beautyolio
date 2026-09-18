@@ -59,10 +59,32 @@ function throwIfError(scope: string, error: { message: string } | null) {
  * publicly reachable as normal live content, unlike a merely-noindex but
  * otherwise real page).
  */
+interface ServiceCacheEntry {
+  timestamp: number;
+  data: ServicePageBundle | null;
+}
+
+const SERVICE_PAGE_CACHE_TTL_MS = 60_000;
+const servicePageMemoryCache = new Map<string, ServiceCacheEntry>();
+
+export function clearServicePageCache(key?: string) {
+  if (key) {
+    servicePageMemoryCache.delete(key);
+  } else {
+    servicePageMemoryCache.clear();
+  }
+}
+
 export async function getPublishedServicePage(
   profileSlug: string,
   serviceSlug: string,
 ): Promise<ServicePageBundle | null> {
+  const cacheKey = `${profileSlug}:${serviceSlug}`;
+  const now = Date.now();
+  const cached = servicePageMemoryCache.get(cacheKey);
+  if (cached && now - cached.timestamp < SERVICE_PAGE_CACHE_TTL_MS) {
+    return cached.data;
+  }
   const supabase = createReadOnlyClient();
 
   const { data: profile, error: profileError } = await supabase
@@ -141,7 +163,7 @@ export async function getPublishedServicePage(
     }));
   }
 
-  return {
+  const bundle: ServicePageBundle = {
     profile,
     seo: seoRes.data,
     service,
@@ -154,6 +176,9 @@ export async function getPublishedServicePage(
     travelAvailable: availabilityRes.data?.travel_available ?? false,
     workingHours: availabilityRes.data?.working_hours ?? null,
   };
+
+  servicePageMemoryCache.set(cacheKey, { timestamp: now, data: bundle });
+  return bundle;
 }
 
 export interface SitemapServiceEntry {

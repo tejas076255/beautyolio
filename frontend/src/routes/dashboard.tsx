@@ -177,7 +177,7 @@ function AppSidebar({
                     <SidebarMenuItem key={item.label}>
                       {item.to ? (
                         <SidebarMenuButton asChild isActive={isActive} tooltip={item.label}>
-                          <Link to={item.to} onClick={handleNavClick}>
+                          <Link to={item.to} preload="intent" onClick={handleNavClick}>
                             <item.icon />
                             <span>{item.label}</span>
                           </Link>
@@ -227,6 +227,7 @@ function DashboardLayout() {
     queryKey: ["is-current-user-admin"],
     queryFn: () => isCurrentUserAdmin(),
     enabled: checked,
+    staleTime: 5 * 60 * 1000,
   });
   // Ensures a brand-new signup has a draft beautician_profiles row before
   // any Builder page tries to read/write "their" profile — idempotent, an
@@ -235,16 +236,19 @@ function DashboardLayout() {
     queryKey: ["ensure-own-portfolio"],
     queryFn: () => ensurePortfolioFn(),
     enabled: checked,
+    staleTime: 10 * 60 * 1000,
   });
   const profileQuery = useQuery({
     queryKey: ["own-profile-summary"],
     queryFn: () => getOwnProfileSummaryFn(),
     enabled: ensureQuery.isSuccess,
+    staleTime: 5 * 60 * 1000,
   });
   const newLeadsQuery = useQuery({
     queryKey: ["new-leads-count"],
     queryFn: () => countNewLeadsFn(),
     enabled: ensureQuery.isSuccess,
+    staleTime: 30_000,
     refetchInterval: 30_000,
   });
   const newLeadsCount = newLeadsQuery.data ?? 0;
