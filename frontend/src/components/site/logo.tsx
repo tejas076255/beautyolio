@@ -1,14 +1,38 @@
-import { Sparkles } from "lucide-react";
+export function Logo({
+  className = "",
+  iconOnly = false,
+  size = "md",
+}: {
+  className?: string;
+  iconOnly?: boolean;
+  size?: "sm" | "md" | "lg";
+}) {
+  const iconSizes = {
+    sm: "h-7 w-7",
+    md: "h-9 w-9",
+    lg: "h-12 w-12",
+  };
 
-export function Logo({ className }: { className?: string }) {
+  const textSizes = {
+    sm: "text-base",
+    md: "text-lg",
+    lg: "text-2xl",
+  };
+
   return (
-    <span className={`inline-flex items-center gap-2 ${className ?? ""}`}>
-      <span className="bg-gradient-brand flex h-9 w-9 items-center justify-center rounded-xl">
-        <Sparkles className="h-4.5 w-4.5 text-primary-foreground" aria-hidden="true" />
-      </span>
-      <span className="font-display text-lg font-semibold tracking-tight">
-        Beauty<span className="text-gradient-brand">Folio</span>
-      </span>
+    <span className={`inline-flex items-center gap-2.5 ${className}`}>
+      <img
+        src="/logo-icon.png"
+        alt="BeautyFolio"
+        className={`${iconSizes[size]} shrink-0 object-contain`}
+      />
+      {!iconOnly && (
+        <span className={`font-display font-bold tracking-tight ${textSizes[size]}`}>
+          <span className="text-foreground">Beauty</span>
+          <span className="text-gradient-brand">Folio</span>
+        </span>
+      )}
     </span>
   );
 }
+

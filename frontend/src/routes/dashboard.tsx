@@ -26,6 +26,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { useRequireAuth } from "@/lib/require-auth";
 import { isCurrentUserAdmin } from "@/lib/require-admin";
 import { supabase } from "@/integrations/supabase/client";
+import { Logo } from "@/components/site/logo";
 import { Button } from "@/components/ui/button";
 import {
   Sidebar,
@@ -153,11 +154,13 @@ function AppSidebar({
             mark itself, which is what was clipping it even with the text
             hidden. p-1 leaves 40px, comfortably fitting the icon centered. */}
         <span className="inline-flex items-center gap-2">
-          <span className="bg-gradient-brand flex h-9 w-9 shrink-0 items-center justify-center rounded-xl">
-            <Sparkles className="h-4.5 w-4.5 text-primary-foreground" aria-hidden="true" />
-          </span>
-          <span className="font-display text-lg font-semibold tracking-tight whitespace-nowrap group-data-[collapsible=icon]:hidden">
-            Beauty<span className="text-gradient-brand">Folio</span>
+          <img
+            src="/logo-icon.png"
+            alt="BeautyFolio"
+            className="h-8 w-8 shrink-0 object-contain"
+          />
+          <span className="font-display text-lg font-bold tracking-tight whitespace-nowrap group-data-[collapsible=icon]:hidden">
+            <span>Beauty</span><span className="text-gradient-brand">Folio</span>
           </span>
         </span>
       </SidebarHeader>

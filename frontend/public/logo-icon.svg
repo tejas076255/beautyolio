@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
+  <defs>
+    <linearGradient id="bf-grad-icon" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E052A0" />
+      <stop offset="45%" stop-color="#A23B91" />
+      <stop offset="100%" stop-color="#541566" />
+    </linearGradient>
+  </defs>
+  <!-- Outer 4-Pointed Star & Integrated Heart Mark -->
+  <path
+    d="M 100 8
+       C 96 35 72 38 45 38
+       C 18 38 0 65 0 100
+       C 30 115 58 135 100 192
+       C 142 135 170 115 200 100
+       C 200 65 182 38 155 38
+       C 128 38 104 35 100 8 Z"
+    fill="url(#bf-grad-icon)"
+  />
+  <path
+    d="M 100 78
+       C 82 50 48 52 38 76
+       C 28 100 56 135 100 168
+       C 144 135 172 100 162 76
+       C 152 52 118 50 100 78 Z"
+    fill="#FFFFFF"
+  />
+  <path
+    d="M 100 92
+       C 86 68 58 70 50 88
+       C 42 106 64 132 100 156
+       C 136 132 158 106 150 88
+       C 142 70 114 68 100 92 Z"
+    fill="url(#bf-grad-icon)"
+  />
+</svg>

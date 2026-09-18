@@ -726,13 +726,212 @@ Continue developing this project in the [Lovable editor](https://lovable.dev/pro
 - **Stay in sync**: every change made in Lovable is committed straight to this repository.
 - **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
 
-## Development
+---
 
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
+# 🛠️ Complete Full-Stack Setup & Deployment Guide
 
-```sh
-git clone <this-repository-url>
-cd <repository-name>
-npm i
-npm run dev
+This section contains complete step-by-step instructions to set up, run, and deploy both the **Frontend (React 19 / TanStack Start)** and **Backend (Python FastAPI)** with **Supabase**, **Vercel**, and **Render**.
+
+---
+
+## Table of Contents
+1. [Prerequisites](#1-prerequisites)
+2. [Local Development Setup](#2-local-development-setup)
+   - [Backend Setup (FastAPI Python)](#backend-setup-python--fastapi)
+   - [Frontend Setup (React / TanStack Start)](#frontend-setup-react--tanstack-start)
+   - [Database Setup (Supabase)](#database-setup-supabase)
+3. [Frontend Deployment on Vercel](#3-frontend-deployment-on-vercel-)
+4. [Backend Deployment on Render](#4-backend-deployment-on-render-)
+5. [Environment Variables Reference](#5-environment-variables-reference)
+6. [Testing & Verification](#6-testing--verification)
+
+---
+
+### 1. Prerequisites
+
+Before running or deploying the project, ensure you have installed:
+- **Node.js**: v18.x or v20.x+
+- **npm** (or **bun**)
+- **Python**: v3.10+
+- **Git**
+- **Supabase Account** (for database & authentication)
+
+---
+
+### 2. Local Development Setup
+
+#### Step 1: Clone Repository
+```bash
+git clone <repository-url>
+cd beati
+```
+
+---
+
+#### Backend Setup (Python / FastAPI)
+
+1. Navigate to the `backend/` directory:
+   ```bash
+   cd backend
+   ```
+
+2. Create a Python virtual environment:
+   ```bash
+   python -m venv .venv
+   ```
+
+3. Activate the virtual environment:
+   - **Windows PowerShell**: `.venv\Scripts\Activate.ps1`
+   - **Windows CMD**: `.venv\Scripts\activate.bat`
+   - **macOS / Linux**: `source .venv/bin/activate`
+
+4. Install Python dependencies:
+   ```bash
+   pip install -r requirements.txt
+   pip install -r requirements-dev.txt
+   ```
+
+5. Configure Environment Variables (`backend/.env`):
+   Create a `.env` file inside `backend/`:
+   ```env
+   SUPABASE_URL=https://<your-supabase-project-id>.supabase.co
+   SUPABASE_PUBLISHABLE_KEY=sb_publishable_...
+   SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-secret
+   SUPABASE_JWT_SECRET=your-supabase-jwt-secret
+   RESEND_API_KEY=optional-resend-api-key
+   ```
+
+6. Run the FastAPI development server:
+   ```bash
+   uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+   ```
+   * **API Docs (Swagger):** `http://localhost:8000/docs`
+   * **Health Check:** `http://localhost:8000/api/health`
+
+---
+
+#### Frontend Setup (React / TanStack Start)
+
+1. Open a new terminal and navigate to the `frontend/` directory:
+   ```bash
+   cd frontend
+   ```
+
+2. Install Node dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Configure Environment Variables (`frontend/.env`):
+   Create a `.env` file inside `frontend/`:
+   ```env
+   SUPABASE_URL=https://<your-supabase-project-id>.supabase.co
+   SUPABASE_PUBLISHABLE_KEY=sb_publishable_...
+   VITE_SUPABASE_URL=https://<your-supabase-project-id>.supabase.co
+   VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_...
+
+   VITE_SITE_URL=http://localhost:3000
+   FASTAPI_URL=http://localhost:8000
+   ```
+
+4. Start the frontend development server:
+   ```bash
+   npm run dev
+   ```
+   * Access the local frontend app at: `http://localhost:3000`
+
+---
+
+#### Database Setup (Supabase)
+
+1. Create a project at [Supabase Console](https://supabase.com).
+2. Go to the SQL Editor and execute all SQL scripts in `supabase/migrations/`.
+3. Retrieve your API secrets (`SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_JWT_SECRET`) from **Project Settings > API**.
+4. Add these keys to `backend/.env` and `frontend/.env`.
+
+---
+
+### 3. Frontend Deployment on Vercel 🚀
+
+To deploy the frontend application to **Vercel**:
+
+1. Push your repository to GitHub.
+2. Log in to [Vercel Dashboard](https://vercel.com) and click **Add New** > **Project**.
+3. Import your GitHub repository.
+4. Configure Project Build Settings:
+   - **Root Directory**: `frontend`
+   - **Framework Preset**: `Vite`
+   - **Build Command**: `npm run build`
+   - **Output Directory**: `.output/public`
+5. Configure Environment Variables in Vercel (**Settings > Environment Variables**):
+   - `VITE_SUPABASE_URL` = `https://<project>.supabase.co`
+   - `VITE_SUPABASE_PUBLISHABLE_KEY` = `sb_publishable_...`
+   - `SUPABASE_URL` = `https://<project>.supabase.co`
+   - `SUPABASE_PUBLISHABLE_KEY` = `sb_publishable_...`
+   - `SUPABASE_SERVICE_ROLE_KEY` = `<your-service-role-key>`
+   - `FASTAPI_URL` = `https://<your-render-backend-app>.onrender.com`
+   - `VITE_SITE_URL` = `https://<your-app>.vercel.app`
+6. Click **Deploy**.
+
+---
+
+### 4. Backend Deployment on Render ⚡
+
+To deploy the FastAPI backend service to **Render**:
+
+1. Log in to [Render Dashboard](https://dashboard.render.com).
+2. Click **New +** > **Web Service** and select your GitHub repository.
+3. Configure Service Details:
+   - **Name**: `beati-backend`
+   - **Root Directory**: `backend`
+   - **Environment**: `Python 3`
+   - **Build Command**: `pip install -r requirements.txt`
+   - **Start Command**: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+4. Add Environment Variables in Render (**Environment** tab):
+   - `SUPABASE_URL` = `https://<project>.supabase.co`
+   - `SUPABASE_PUBLISHABLE_KEY` = `sb_publishable_...`
+   - `SUPABASE_SERVICE_ROLE_KEY` = `<your-service-role-key>`
+   - `SUPABASE_JWT_SECRET` = `<your-jwt-secret>`
+   - `PYTHON_VERSION` = `3.10.12`
+5. Click **Create Web Service**.
+6. Copy your live Render service URL (e.g. `https://beati-backend.onrender.com`) and paste it as `FASTAPI_URL` in your Vercel project environment variables.
+
+---
+
+### 5. Environment Variables Reference
+
+| Environment Variable | Location | Description |
+|---|---|---|
+| `VITE_SUPABASE_URL` | Frontend `.env` | Supabase URL accessible in client bundle |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | Frontend `.env` | Supabase publishable key for client bundle |
+| `SUPABASE_URL` | Frontend & Backend `.env` | Supabase project URL for server-side calls |
+| `SUPABASE_PUBLISHABLE_KEY` | Frontend & Backend `.env` | Supabase publishable/anon key |
+| `SUPABASE_SERVICE_ROLE_KEY` | Frontend & Backend `.env` | Supabase Service Role key (Server-only, bypasses RLS) |
+| `FASTAPI_URL` | Frontend `.env` / Vercel | Target backend URL proxied by TanStack Start server functions |
+| `VITE_SITE_URL` | Frontend `.env` / Vercel | Canonical site origin for absolute links and SEO |
+| `SUPABASE_JWT_SECRET` | Backend `.env` / Render | Secret used by FastAPI to verify Supabase JWT access tokens |
+| `RESEND_API_KEY` | Backend `.env` / Render | (Optional) API Key for sending lead notifications via Resend |
+
+---
+
+### 6. Testing & Verification
+
+#### Backend Health Check
+```bash
+# Check service health
+curl http://localhost:8000/api/health
+
+# Check database connectivity
+curl http://localhost:8000/api/health/db
+```
+
+#### Frontend QA & Test Suite
+Run commands inside the `frontend/` directory:
+```bash
+# Unit & Security tests
+npm run test:unit
+npm run test:security
+
+# Playwright E2E & QA suite
+npm run test:qa
 ```
