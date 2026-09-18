@@ -451,6 +451,9 @@ function buildHead(
 }
 
 export const Route = createFileRoute("/portfolio/$slug")({
+  headers: () => ({
+    "Cache-Control": "public, max-age=60, s-maxage=60, stale-while-revalidate=300",
+  }),
   // Lets a service page's "Check availability" link (Phase 3F.6 §8/§9)
   // pre-select the Availability form's service dropdown via ?service=—
   // plain client-side prefill, no schema/lead-architecture change.

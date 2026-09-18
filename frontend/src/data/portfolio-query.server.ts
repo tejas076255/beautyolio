@@ -151,7 +151,28 @@ function throwIfError(scope: string, slug: string, error: { message: string } | 
  * "not found". The billing-safety gate below never throws — a failure
  * there resolves to `null`, not an exception.
  */
+interface CacheEntry {
+  timestamp: number;
+  data: PortfolioBundle | null;
+}
+
+const PORTFOLIO_CACHE_TTL_MS = 60_000;
+const portfolioMemoryCache = new Map<string, CacheEntry>();
+
+export function clearPortfolioCache(slug?: string) {
+  if (slug) {
+    portfolioMemoryCache.delete(slug);
+  } else {
+    portfolioMemoryCache.clear();
+  }
+}
+
 export async function getPublishedPortfolioBySlug(slug: string): Promise<PortfolioBundle | null> {
+  const now = Date.now();
+  const cached = portfolioMemoryCache.get(slug);
+  if (cached && now - cached.timestamp < PORTFOLIO_CACHE_TTL_MS) {
+    return cached.data;
+  }
   // Billing Phase A public-safety gate, run before the public content
   // read. This is billing-sensitive: an expired-and-grace-ended paid
   // profile must never be served merely because reconciliation happened
@@ -391,7 +412,7 @@ export async function getPublishedPortfolioBySlug(slug: string): Promise<Portfol
     }
   }
 
-  return {
+  const bundle: PortfolioBundle = {
     profile,
     specializations,
     services: servicesRes.data ?? [],
@@ -413,6 +434,9 @@ export async function getPublishedPortfolioBySlug(slug: string): Promise<Portfol
     seo: seoRes.data ?? null,
     trackingGtmContainerId,
   };
+
+  portfolioMemoryCache.set(slug, { timestamp: now, data: bundle });
+  return bundle;
 }
 
 export interface SitemapEntry {

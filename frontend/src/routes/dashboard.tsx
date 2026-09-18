@@ -307,6 +307,7 @@ function DashboardLayout() {
               <Link
                 to="/portfolio/$slug"
                 params={{ slug }}
+                preload="intent"
                 target="_blank"
                 rel="noreferrer"
                 className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 text-xs font-medium text-foreground shadow-sm hover:bg-accent hover:text-accent-foreground transition-colors"

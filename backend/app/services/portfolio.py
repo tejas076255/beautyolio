@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import logging
 from typing import Optional
+from concurrent.futures import ThreadPoolExecutor
 
 from ..core.supabase import get_client
 from . import billing
@@ -98,94 +99,112 @@ def get_published_portfolio_by_slug(slug: str) -> Optional[dict]:
 
     bp_id = profile["id"]
 
-    beautician_specializations = _data(
-        client.table("beautician_specializations")
-        .select("specialization_id, sort_order")
-        .eq("beautician_profile_id", bp_id)
-        .order("sort_order")
-        .execute()
-    )
-    services = _data(
-        client.table("services")
-        .select("*")
-        .eq("beautician_profile_id", bp_id)
-        .eq("is_active", True)
-        .order("sort_order")
-        .execute()
-    )
-    packages = _data(
-        client.table("packages")
-        .select("*")
-        .eq("beautician_profile_id", bp_id)
-        .eq("is_active", True)
-        .order("sort_order")
-        .execute()
-    )
-    portfolio_items = _data(
-        client.table("portfolio_items")
-        .select("*")
-        .eq("beautician_profile_id", bp_id)
-        .eq("is_published", True)
-        .order("sort_order")
-        .execute()
-    )
-    before_after_items = _data(
-        client.table("before_after_items")
-        .select("*")
-        .eq("beautician_profile_id", bp_id)
-        .eq("is_published", True)
-        .order("sort_order")
-        .execute()
-    )
-    videos = _data(
-        client.table("portfolio_videos")
-        .select("*")
-        .eq("beautician_profile_id", bp_id)
-        .eq("is_published", True)
-        .order("sort_order")
-        .execute()
-    )
-    reviews = _data(
-        client.table("reviews")
-        .select("*")
-        .eq("beautician_profile_id", bp_id)
-        .eq("is_published", True)
-        .order("review_date", desc=True)
-        .execute()
-    )
-    service_areas = _data(
-        client.table("service_areas")
-        .select("*")
-        .eq("beautician_profile_id", bp_id)
-        .eq("is_active", True)
-        .order("sort_order")
-        .execute()
-    )
-    availability = _row(
-        client.table("availability_settings")
-        .select("*")
-        .eq("beautician_profile_id", bp_id)
-        .maybe_single()
-        .execute()
-    )
-    blocked_dates = _data(
-        client.table("availability_blocked_dates")
-        .select("*")
-        .eq("beautician_profile_id", bp_id)
-        .order("blocked_date")
-        .execute()
-    )
-    faqs = _data(
-        client.table("faqs")
-        .select("*")
-        .eq("beautician_profile_id", bp_id)
-        .eq("is_published", True)
-        .order("sort_order")
-        .execute()
-    )
-    seo = _row(
-        client.table("portfolio_seo").select("*").eq("beautician_profile_id", bp_id).maybe_single().execute()
-    )
+    with ThreadPoolExecutor(max_workers=12) as executor:
+        f_spec = executor.submit(
+            lambda: client.table("beautician_specializations")
+            .select("specialization_id, sort_order")
+            .eq("beautician_profile_id", bp_id)
+            .order("sort_order")
+            .execute()
+        )
+        f_serv = executor.submit(
+            lambda: client.table("services")
+            .select("*")
+            .eq("beautician_profile_id", bp_id)
+            .eq("is_active", True)
+            .order("sort_order")
+            .execute()
+        )
+        f_pack = executor.submit(
+            lambda: client.table("packages")
+            .select("*")
+            .eq("beautician_profile_id", bp_id)
+            .eq("is_active", True)
+            .order("sort_order")
+            .execute()
+        )
+        f_port = executor.submit(
+            lambda: client.table("portfolio_items")
+            .select("*")
+            .eq("beautician_profile_id", bp_id)
+            .eq("is_published", True)
+            .order("sort_order")
+            .execute()
+        )
+        f_ba = executor.submit(
+            lambda: client.table("before_after_items")
+            .select("*")
+            .eq("beautician_profile_id", bp_id)
+            .eq("is_published", True)
+            .order("sort_order")
+            .execute()
+        )
+        f_vid = executor.submit(
+            lambda: client.table("portfolio_videos")
+            .select("*")
+            .eq("beautician_profile_id", bp_id)
+            .eq("is_published", True)
+            .order("sort_order")
+            .execute()
+        )
+        f_rev = executor.submit(
+            lambda: client.table("reviews")
+            .select("*")
+            .eq("beautician_profile_id", bp_id)
+            .eq("is_published", True)
+            .order("review_date", desc=True)
+            .execute()
+        )
+        f_area = executor.submit(
+            lambda: client.table("service_areas")
+            .select("*")
+            .eq("beautician_profile_id", bp_id)
+            .eq("is_active", True)
+            .order("sort_order")
+            .execute()
+        )
+        f_avail = executor.submit(
+            lambda: client.table("availability_settings")
+            .select("*")
+            .eq("beautician_profile_id", bp_id)
+            .maybe_single()
+            .execute()
+        )
+        f_block = executor.submit(
+            lambda: client.table("availability_blocked_dates")
+            .select("*")
+            .eq("beautician_profile_id", bp_id)
+            .order("blocked_date")
+            .execute()
+        )
+        f_faq = executor.submit(
+            lambda: client.table("faqs")
+            .select("*")
+            .eq("beautician_profile_id", bp_id)
+            .eq("is_published", True)
+            .order("sort_order")
+            .execute()
+        )
+        f_seo = executor.submit(
+            lambda: client.table("portfolio_seo")
+            .select("*")
+            .eq("beautician_profile_id", bp_id)
+            .maybe_single()
+            .execute()
+        )
+
+    beautician_specializations = _data(f_spec.result())
+    services = _data(f_serv.result())
+    packages = _data(f_pack.result())
+    portfolio_items = _data(f_port.result())
+    before_after_items = _data(f_ba.result())
+    videos = _data(f_vid.result())
+    reviews = _data(f_rev.result())
+    service_areas = _data(f_area.result())
+    availability = _row(f_avail.result())
+    blocked_dates = _data(f_block.result())
+    faqs = _data(f_faq.result())
+    seo = _row(f_seo.result())
 
     # QA-only table until its migration is approved — best-effort, never a
     # broken page if it doesn't exist.
