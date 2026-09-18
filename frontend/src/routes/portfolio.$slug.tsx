@@ -21,6 +21,7 @@ import {
   WhyChooseSection,
 } from "@/components/portfolio/portfolio-sections";
 import { SiteFooter } from "@/components/site/site-footer";
+import { PortfolioSkeleton } from "@/components/portfolio/portfolio-skeleton";
 import { Button } from "@/components/ui/button";
 import { dhartiProfile, type BeauticianProfile } from "@/data/portfolio";
 import {
@@ -451,6 +452,8 @@ function buildHead(
 }
 
 export const Route = createFileRoute("/portfolio/$slug")({
+  pendingComponent: PortfolioSkeleton,
+  pendingMs: 0,
   headers: () => ({
     "Cache-Control": "public, max-age=60, s-maxage=60, stale-while-revalidate=300",
   }),
