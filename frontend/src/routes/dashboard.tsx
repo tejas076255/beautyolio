@@ -253,6 +253,18 @@ function DashboardLayout() {
   });
   const newLeadsCount = newLeadsQuery.data ?? 0;
 
+  // Auto-redirect to /login if the session token is unauthorized or invalid
+  const ensureErrMessage = (ensureQuery.error as Error)?.message || "";
+  const isAuthError = ensureErrMessage.toLowerCase().includes("unauthorized") || ensureErrMessage.toLowerCase().includes("invalid token");
+
+  useEffect(() => {
+    if (ensureQuery.isError && isAuthError) {
+      supabase.auth.signOut().then(() => {
+        navigate({ to: "/login" });
+      });
+    }
+  }, [ensureQuery.isError, isAuthError, navigate]);
+
   if (!checked || (!ensureQuery.isSuccess && !ensureQuery.isError)) {
     return (
       <div className="flex min-h-screen items-center justify-center text-sm text-muted-foreground">
@@ -262,9 +274,16 @@ function DashboardLayout() {
   }
 
   if (ensureQuery.isError) {
+    if (isAuthError) {
+      return (
+        <div className="flex min-h-screen items-center justify-center text-sm text-muted-foreground">
+          Redirecting to login…
+        </div>
+      );
+    }
     return (
       <div className="flex min-h-screen items-center justify-center px-4 text-center text-sm text-destructive">
-        {(ensureQuery.error as Error).message || "Failed to set up your portfolio."}
+        {ensureErrMessage || "Failed to set up your portfolio."}
       </div>
     );
   }
