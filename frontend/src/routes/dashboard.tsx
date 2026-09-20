@@ -255,8 +255,20 @@ function DashboardLayout() {
   const newLeadsCount = newLeadsQuery.data ?? 0;
 
   // Auto-redirect to /login if the session token is unauthorized or invalid
-  const ensureErrMessage = (ensureQuery.error as Error)?.message || "";
-  const isAuthError = ensureErrMessage.toLowerCase().includes("unauthorized") || ensureErrMessage.toLowerCase().includes("invalid token");
+  const ensureErrMessage =
+    typeof ensureQuery.error === "string"
+      ? ensureQuery.error
+      : (ensureQuery.error as Error)?.message ||
+        (ensureQuery.error as any)?.cause?.message ||
+        JSON.stringify(ensureQuery.error ?? "");
+
+  const errStr = (ensureErrMessage + " " + String(ensureQuery.error ?? "")).toLowerCase();
+  const isAuthError =
+    errStr.includes("unauthorized") ||
+    errStr.includes("invalid token") ||
+    errStr.includes("no authorization header") ||
+    errStr.includes("jwt") ||
+    errStr.includes("bearer");
 
   useEffect(() => {
     if (ensureQuery.isError && isAuthError) {
