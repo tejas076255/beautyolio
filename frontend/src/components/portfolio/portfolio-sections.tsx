@@ -1509,12 +1509,17 @@ export function AvailabilitySection({
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [date, setDate] = useState("");
+  const [timeSlot, setTimeSlot] = useState("");
   const [service, setService] = useState(initialService ?? "");
   const [location, setLocation] = useState("");
   const [message, setMessage] = useState("");
   const [sent, setSent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const todayStr = new Date().toISOString().split("T")[0];
+  const isSelectedToday = date === todayStr;
+
   // Phase 3G.3 §13/§25 — fires availability_form_start at most once per
   // form instance, on the visitor's first genuine field interaction (not
   // merely because the form rendered).
@@ -1551,7 +1556,7 @@ export function AvailabilitySection({
     profile,
     `Hi ${profile.name.split(" ")[0]}, I'd like to check your availability.\nDate: ${
       date || "—"
-    }\nService: ${service || "—"}\nLocation: ${location || "—"}`,
+    }\nTime: ${timeSlot || "Any time"}\nService: ${service || "—"}\nLocation: ${location || "—"}`,
   );
 
   const field =
@@ -1568,7 +1573,7 @@ export function AvailabilitySection({
             center={false}
           />
 
-          {profile.availability.workingHoursNote && (
+          {profile.availability.workingHoursNote && (!date || isSelectedToday) && (
             <div className="mt-4 flex items-start gap-3 rounded-2xl border border-primary/20 bg-card p-3.5 text-xs sm:text-sm text-foreground shadow-soft">
               <Clock className="h-4 w-4 shrink-0 text-primary mt-0.5" aria-hidden="true" />
               <div>
@@ -1678,6 +1683,12 @@ export function AvailabilitySection({
                 const attribution = getAttributionSnapshot(profile.slug);
                 const conversionPath = getConversionPath() || `/portfolio/${profile.slug}`;
                 const ctaLocation = attribution.cta_location ?? CtaLocation.AvailabilitySection;
+                const fullMessage = [
+                  timeSlot ? `Preferred Time: ${timeSlot}` : "",
+                  message.trim(),
+                ]
+                  .filter(Boolean)
+                  .join("\n");
                 const { error: rpcError } = await submitPortfolioLeadFn({
                   data: {
                     _slug: profile.slug,
@@ -1688,7 +1699,7 @@ export function AvailabilitySection({
                     ...(date ? { _event_date: date } : {}),
                     ...(service ? { _service_requested: service } : {}),
                     ...(matchedService?.id ? { _service_id: matchedService.id } : {}),
-                    ...(message.trim() ? { _message: message.trim() } : {}),
+                    ...(fullMessage ? { _message: fullMessage } : {}),
                     ...(attribution.utm_source ? { _utm_source: attribution.utm_source } : {}),
                     ...(attribution.utm_medium ? { _utm_medium: attribution.utm_medium } : {}),
                     ...(attribution.utm_campaign
@@ -1834,6 +1845,24 @@ export function AvailabilitySection({
                     </div>
                   )}
                 </label>
+                <label className="text-sm">
+                  <span className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
+                    Preferred Time Slot
+                  </span>
+                  <select
+                    value={timeSlot}
+                    onChange={(e) => setTimeSlot(e.target.value)}
+                    className={field}
+                  >
+                    <option value="">Any time / Flexible</option>
+                    <option value="Morning (9:00 AM - 12:00 PM)">Morning (9:00 AM - 12:00 PM)</option>
+                    <option value="Early Afternoon (12:00 PM - 3:00 PM)">Early Afternoon (12:00 PM - 3:00 PM)</option>
+                    <option value="Late Afternoon (3:00 PM - 6:00 PM)">Late Afternoon (3:00 PM - 6:00 PM)</option>
+                    <option value="Evening (6:00 PM - 9:00 PM)">Evening (6:00 PM - 9:00 PM)</option>
+                  </select>
+                </label>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
                 <label className="text-sm">
                   <span className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
                     Service
