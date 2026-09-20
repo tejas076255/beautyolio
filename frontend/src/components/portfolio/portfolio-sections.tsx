@@ -1814,18 +1814,6 @@ export function AvailabilitySection({
                         </p>
                       </div>
                     </div>
-                  ) : isBlocked ? (
-                    <div className="mt-2 flex items-start gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 p-2.5 text-xs text-amber-800 dark:text-amber-200">
-                      <Clock className="h-4 w-4 shrink-0 mt-0.5 text-amber-600" aria-hidden="true" />
-                      <div>
-                        <p className="font-semibold text-amber-700 dark:text-amber-300">
-                          Special Schedule ({blockedItem?.reason || "Break / Special Schedule"})
-                        </p>
-                        <p className="mt-0.5 text-amber-700/90 dark:text-amber-300/90">
-                          {profile.name.split(" ")[0]} has a note on another time slot for this date. Your selected time ({timeSlot || "Flexible"}) looks available!
-                        </p>
-                      </div>
-                    </div>
                   ) : (
                     eligibility && (
                       <p
@@ -1838,24 +1826,6 @@ export function AvailabilitySection({
                       </p>
                     )
                   )}
-                  {profile.availability.blockedDateItems && profile.availability.blockedDateItems.length > 0 && (
-                    <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[11px] text-muted-foreground">
-                      <span className="font-medium">Closed dates:</span>
-                      {profile.availability.blockedDateItems.slice(0, 3).map((b) => (
-                        <span
-                          key={b.date}
-                          className="inline-flex items-center gap-1 rounded bg-secondary px-1.5 py-0.5 text-secondary-foreground"
-                        >
-                          <CalendarX className="h-3 w-3 text-destructive" />
-                          {new Date(`${b.date}T00:00:00`).toLocaleDateString("en-IN", {
-                            day: "numeric",
-                            month: "short",
-                          })}
-                          {b.reason ? ` (${b.reason})` : ""}
-                        </span>
-                      ))}
-                    </div>
-                  )}
                 </label>
                 <label className="text-sm">
                   <span className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
@@ -1867,10 +1837,24 @@ export function AvailabilitySection({
                     className={field}
                   >
                     <option value="">Any time / Flexible</option>
-                    <option value="Morning (9:00 AM - 12:00 PM)">Morning (9:00 AM - 12:00 PM)</option>
-                    <option value="Early Afternoon (12:00 PM - 3:00 PM)">Early Afternoon (12:00 PM - 3:00 PM)</option>
-                    <option value="Late Afternoon (3:00 PM - 6:00 PM)">Late Afternoon (3:00 PM - 6:00 PM)</option>
-                    <option value="Evening (6:00 PM - 9:00 PM)">Evening (6:00 PM - 9:00 PM)</option>
+                    {[
+                      "Morning (9:00 AM - 12:00 PM)",
+                      "Early Afternoon (12:00 PM - 3:00 PM)",
+                      "Late Afternoon (3:00 PM - 6:00 PM)",
+                      "Evening (6:00 PM - 9:00 PM)",
+                    ].map((slotVal) => {
+                      const isOptionBlocked =
+                        date &&
+                        isBlocked &&
+                        (!blockedReason ||
+                          blockedReason.includes("Full Day") ||
+                          blockedReason.includes(slotVal));
+                      return (
+                        <option key={slotVal} value={slotVal}>
+                          {slotVal}{isOptionBlocked ? " - Unavailable" : ""}
+                        </option>
+                      );
+                    })}
                   </select>
                 </label>
               </div>
