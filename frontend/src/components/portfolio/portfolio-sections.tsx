@@ -1474,17 +1474,8 @@ function computeAvailabilityEligibility(
     return "too-soon";
   }
 
-  const requiredNoticeDays =
-    availability.minimumNoticeHours != null
-      ? Math.floor(availability.minimumNoticeHours / 24)
-      : 0;
-
-  if (diffDays < requiredNoticeDays) {
-    return "too-soon";
-  }
-
-  if (availability.advanceBookingDays != null) {
-    if (diffDays > availability.advanceBookingDays) return "too-far";
+  if (availability.advanceBookingDays != null && diffDays > availability.advanceBookingDays) {
+    return "too-far";
   }
 
   return "ok";
@@ -1958,9 +1949,9 @@ export function AvailabilitySection({
                   variant="hero"
                   size="lg"
                   className="sm:flex-1"
-                  disabled={submitting || isBlocked}
+                  disabled={submitting || isSlotBlocked}
                 >
-                  <Calendar aria-hidden="true" /> {submitting ? "Sending…" : isBlocked ? "Date unavailable (Closed)" : "Check availability"}
+                  <Calendar aria-hidden="true" /> {submitting ? "Sending…" : isSlotBlocked ? "Slot unavailable" : "Check availability"}
                 </Button>
                 <Button variant="softline" size="lg" asChild className="sm:flex-1">
                   <a href={enquiry} target="_blank" rel="noreferrer">

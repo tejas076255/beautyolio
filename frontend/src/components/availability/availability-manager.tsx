@@ -126,12 +126,39 @@ function BlockedDatesCard({
   const [date, setDate] = useState("");
   const [slot, setSlot] = useState("Full Day (All Day)");
   const [reason, setReason] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
+
+  const handleEdit = (b: Tables<"availability_blocked_dates">) => {
+    setEditingId(b.id);
+    setDate(b.blocked_date);
+    const r = b.reason ?? "";
+    const timeMatch = r.match(/\[Time:\s*([^\]]+)\]/);
+    if (timeMatch && timeMatch[1]) {
+      setSlot(timeMatch[1]);
+      setReason(r.replace(/\[Time:\s*[^\]]+\]\s*/, ""));
+    } else {
+      setSlot("Full Day (All Day)");
+      setReason(r === "Full Day Blocked" ? "" : r);
+    }
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setDate("");
+    setSlot("Full Day (All Day)");
+    setReason("");
+  };
 
   const submit = () => {
     if (!date) return;
     const slotFormatted = slot && slot !== "Full Day (All Day)" ? `[Time: ${slot}] ` : "";
     const finalReason = `${slotFormatted}${reason}`.trim() || (slot !== "Full Day (All Day)" ? `[Time: ${slot}] Unavailable` : "Full Day Blocked");
+    
+    if (editingId) {
+      onRemove(editingId);
+    }
     onAdd({ blocked_date: date, reason: finalReason });
+    setEditingId(null);
     setDate("");
     setSlot("Full Day (All Day)");
     setReason("");
@@ -188,9 +215,16 @@ function BlockedDatesCard({
               className="mt-1"
             />
           </label>
-          <Button type="button" variant="softline" disabled={!date || isSaving} onClick={submit}>
-            {isSaving ? "Adding…" : "Add blocked slot"}
-          </Button>
+          <div className="flex gap-2">
+            <Button type="button" variant="softline" disabled={!date || isSaving} onClick={submit}>
+              {isSaving ? "Saving…" : editingId ? "Save changes" : "Add blocked slot"}
+            </Button>
+            {editingId && (
+              <Button type="button" variant="ghost" onClick={cancelEdit}>
+                Cancel
+              </Button>
+            )}
+          </div>
         </div>
 
         {isLoading ? (
@@ -211,16 +245,27 @@ function BlockedDatesCard({
                   </p>
                   {b.reason && <p className="text-xs text-muted-foreground">{b.reason}</p>}
                 </div>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  aria-label={`Remove blocked date ${b.blocked_date}`}
-                  onClick={() => onRemove(b.id)}
-                  disabled={isSaving}
-                >
-                  Remove
-                </Button>
+                <div className="flex items-center gap-1">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleEdit(b)}
+                    disabled={isSaving}
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    aria-label={`Remove blocked date ${b.blocked_date}`}
+                    onClick={() => onRemove(b.id)}
+                    disabled={isSaving}
+                  >
+                    Remove
+                  </Button>
+                </div>
               </li>
             ))}
           </ul>
