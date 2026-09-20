@@ -1538,6 +1538,13 @@ export function AvailabilitySection({
   const acceptingBookings = profile.availability.acceptingBookings;
   const isBlocked = !!(date && profile.availability.blockedDates?.includes(date));
   const blockedItem = profile.availability.blockedDateItems?.find((b) => b.date === date);
+  const blockedReason = blockedItem?.reason ?? "";
+  const isTimeSlotMatch =
+    !timeSlot ||
+    blockedReason.includes(timeSlot) ||
+    blockedReason.includes("Full Day") ||
+    !blockedReason.includes("[Time:");
+  const isSlotBlocked = isBlocked && isTimeSlotMatch;
   const eligibility = computeAvailabilityEligibility(date, profile.availability);
 
   // Advisory only — a location outside the listed service areas should never
@@ -1652,8 +1659,10 @@ export function AvailabilitySection({
               onSubmit={async (e) => {
                 e.preventDefault();
                 setError(null);
-                // Phase 3G.3 §13 — represents a genuine submit attempt,
-                // regardless of whether client validation then blocks it.
+                if (isSlotBlocked) {
+                  setError("This date or time is not available. Please select another date or time slot.");
+                  return;
+                }
                 trackEvent(AnalyticsEvent.AvailabilityFormSubmit, {
                   profile_slug: profile.slug,
                   page_path: `/portfolio/${profile.slug}`,
@@ -1802,7 +1811,19 @@ export function AvailabilitySection({
                     required
                     className={field}
                   />
-                  {isBlocked ? (
+                  {isSlotBlocked ? (
+                    <div className="mt-2 flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/10 p-2.5 text-xs text-destructive">
+                      <CalendarX className="h-4 w-4 shrink-0 mt-0.5" aria-hidden="true" />
+                      <div>
+                        <p className="font-semibold text-destructive">
+                          This date or time is not available
+                        </p>
+                        <p className="mt-0.5 text-destructive/90">
+                          {profile.name.split(" ")[0]} is unavailable for {timeSlot ? `"${timeSlot}"` : "this date"} on {date}. {blockedItem?.reason ? `Note: ${blockedItem.reason}` : ""} Please choose another time slot or date.
+                        </p>
+                      </div>
+                    </div>
+                  ) : isBlocked ? (
                     <div className="mt-2 flex items-start gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 p-2.5 text-xs text-amber-800 dark:text-amber-200">
                       <Clock className="h-4 w-4 shrink-0 mt-0.5 text-amber-600" aria-hidden="true" />
                       <div>
@@ -1810,7 +1831,7 @@ export function AvailabilitySection({
                           Special Schedule ({blockedItem?.reason || "Break / Special Schedule"})
                         </p>
                         <p className="mt-0.5 text-amber-700/90 dark:text-amber-300/90">
-                          {profile.name.split(" ")[0]} has a note/break on this date. You can still send a request and she will confirm exact timing with you.
+                          {profile.name.split(" ")[0]} has a note on another time slot for this date. Your selected time ({timeSlot || "Flexible"}) looks available!
                         </p>
                       </div>
                     </div>

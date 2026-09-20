@@ -124,12 +124,16 @@ function BlockedDatesCard({
   onRemove: (id: string) => void;
 }) {
   const [date, setDate] = useState("");
+  const [slot, setSlot] = useState("Full Day (All Day)");
   const [reason, setReason] = useState("");
 
   const submit = () => {
     if (!date) return;
-    onAdd({ blocked_date: date, reason: reason || null });
+    const slotFormatted = slot && slot !== "Full Day (All Day)" ? `[Time: ${slot}] ` : "";
+    const finalReason = `${slotFormatted}${reason}`.trim() || (slot !== "Full Day (All Day)" ? `[Time: ${slot}] Unavailable` : "Full Day Blocked");
+    onAdd({ blocked_date: date, reason: finalReason });
     setDate("");
+    setSlot("Full Day (All Day)");
     setReason("");
   };
 
@@ -138,10 +142,10 @@ function BlockedDatesCard({
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
           <CalendarX className="h-4 w-4 text-primary" aria-hidden="true" />
-          Blocked dates
+          Blocked dates & time slots
         </CardTitle>
         <CardDescription>
-          Mark specific dates as unavailable — fully booked, a holiday, or a personal event.
+          Mark specific dates or time slots as unavailable — fully booked, a holiday, or a personal break.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -158,7 +162,21 @@ function BlockedDatesCard({
               className="mt-1"
             />
           </label>
-          <label className="min-w-0 flex-1 text-sm font-medium">
+          <label className="text-sm font-medium">
+            Blocked Time Slot
+            <select
+              value={slot}
+              onChange={(e) => setSlot(e.target.value)}
+              className="mt-1 h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-xs shadow-sm outline-none focus:ring-1 focus:ring-ring"
+            >
+              <option value="Full Day (All Day)">Full Day (All Day)</option>
+              <option value="Morning (9:00 AM - 12:00 PM)">Morning (9:00 AM - 12:00 PM)</option>
+              <option value="Early Afternoon (12:00 PM - 3:00 PM)">Early Afternoon (12:00 PM - 3:00 PM)</option>
+              <option value="Late Afternoon (3:00 PM - 6:00 PM)">Late Afternoon (3:00 PM - 6:00 PM)</option>
+              <option value="Evening (6:00 PM - 9:00 PM)">Evening (6:00 PM - 9:00 PM)</option>
+            </select>
+          </label>
+          <label className="min-w-[180px] flex-1 text-sm font-medium">
             Reason (optional)
             <Input
               value={reason}
@@ -166,12 +184,12 @@ function BlockedDatesCard({
               onKeyDown={(e) => {
                 if (e.key === "Enter" && date) submit();
               }}
-              placeholder="Fully booked, Holiday, …"
+              placeholder="Fully booked, Holiday, Break …"
               className="mt-1"
             />
           </label>
           <Button type="button" variant="softline" disabled={!date || isSaving} onClick={submit}>
-            {isSaving ? "Adding…" : "Add blocked date"}
+            {isSaving ? "Adding…" : "Add blocked slot"}
           </Button>
         </div>
 
