@@ -255,14 +255,19 @@ function DashboardLayout() {
   const newLeadsCount = newLeadsQuery.data ?? 0;
 
   // Auto-redirect to /login if the session token is unauthorized or invalid
+  const rawError = (ensureQuery as { error?: unknown }).error;
   const ensureErrMessage =
-    typeof ensureQuery.error === "string"
-      ? ensureQuery.error
-      : (ensureQuery.error as Error)?.message ||
-        (ensureQuery.error as any)?.cause?.message ||
-        JSON.stringify(ensureQuery.error ?? "");
+    typeof rawError === "string"
+      ? rawError
+      : rawError instanceof Error
+      ? rawError.message
+      : rawError && typeof rawError === "object" && "message" in rawError
+      ? String((rawError as { message?: unknown }).message ?? "")
+      : rawError
+      ? String(rawError)
+      : "";
 
-  const errStr = (ensureErrMessage + " " + String(ensureQuery.error ?? "")).toLowerCase();
+  const errStr = (ensureErrMessage + " " + String(rawError ?? "")).toLowerCase();
   const isAuthError =
     errStr.includes("unauthorized") ||
     errStr.includes("invalid token") ||
