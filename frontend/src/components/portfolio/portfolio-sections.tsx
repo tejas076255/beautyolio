@@ -1463,21 +1463,36 @@ function computeAvailabilityEligibility(
   const target = new Date(`${dateStr}T00:00:00`);
   if (Number.isNaN(target.getTime())) return null;
   if (availability.blockedDates.includes(dateStr)) return "blocked";
+
   const now = new Date();
-  if (availability.minimumNoticeHours != null) {
-    const minDate = new Date(now.getTime() + availability.minimumNoticeHours * 60 * 60 * 1000);
-    if (target < minDate) return "too-soon";
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  if (target < todayStart) return null;
+
+  const diffDays = Math.round((target.getTime() - todayStart.getTime()) / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) {
+    return "too-soon";
   }
+
+  const requiredNoticeDays =
+    availability.minimumNoticeHours != null
+      ? Math.floor(availability.minimumNoticeHours / 24)
+      : 0;
+
+  if (diffDays < requiredNoticeDays) {
+    return "too-soon";
+  }
+
   if (availability.advanceBookingDays != null) {
-    const maxDate = new Date(now.getTime() + availability.advanceBookingDays * 24 * 60 * 60 * 1000);
-    if (target > maxDate) return "too-far";
+    if (diffDays > availability.advanceBookingDays) return "too-far";
   }
+
   return "ok";
 }
 
 const ELIGIBILITY_MESSAGE: Record<Exclude<AvailabilityEligibility, null>, string> = {
   ok: "This date looks available to request.",
-  blocked: "This date isn't usually available — you can still send a request.",
+  blocked: "Notice for this date — you can still send a request for confirmation.",
   "too-soon": "That's short notice — I'll do my best to get back to you quickly.",
   "too-far": "That's further ahead than I usually plan — I'll confirm as soon as I can.",
 };
@@ -1632,12 +1647,6 @@ export function AvailabilitySection({
               onSubmit={async (e) => {
                 e.preventDefault();
                 setError(null);
-                if (isBlocked) {
-                  setError(
-                    `Bookings are closed on ${date} (${blockedItem?.reason || "Holiday / Closed"}). Please select another date.`,
-                  );
-                  return;
-                }
                 // Phase 3G.3 §13 — represents a genuine submit attempt,
                 // regardless of whether client validation then blocks it.
                 trackEvent(AnalyticsEvent.AvailabilityFormSubmit, {
@@ -1783,14 +1792,14 @@ export function AvailabilitySection({
                     className={field}
                   />
                   {isBlocked ? (
-                    <div className="mt-2 flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/10 p-2.5 text-xs text-destructive">
-                      <CalendarX className="h-4 w-4 shrink-0 mt-0.5" aria-hidden="true" />
+                    <div className="mt-2 flex items-start gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 p-2.5 text-xs text-amber-800 dark:text-amber-200">
+                      <Clock className="h-4 w-4 shrink-0 mt-0.5 text-amber-600" aria-hidden="true" />
                       <div>
-                        <p className="font-semibold">
-                          Unavailable ({blockedItem?.reason || "Holiday / Closed"})
+                        <p className="font-semibold text-amber-700 dark:text-amber-300">
+                          Special Schedule ({blockedItem?.reason || "Break / Special Schedule"})
                         </p>
-                        <p className="mt-0.5 text-destructive/90">
-                          {profile.name.split(" ")[0]} is on leave / closed on this date. Booking is disabled for this date. Please select another date.
+                        <p className="mt-0.5 text-amber-700/90 dark:text-amber-300/90">
+                          {profile.name.split(" ")[0]} has a note/break on this date. You can still send a request and she will confirm exact timing with you.
                         </p>
                       </div>
                     </div>
