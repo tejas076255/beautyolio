@@ -45,11 +45,13 @@ import { getAttributionSnapshot, getConversionPath, recordCtaClick } from "@/lib
 // creation) reports success. See src/data/leads-submit.server.ts.
 const submitPortfolioLeadFn = createServerFn({ method: "POST" })
   .validator((data: Database["public"]["Functions"]["submit_lead"]["Args"]) => data)
-  .handler(async ({ data, request }) => {
+  .handler(async ({ data }) => {
     const { isFastApiConfigured, callApi } = await import("@/lib/api-client.server");
 
     if (isFastApiConfigured()) {
       try {
+        const { getRequest } = await import("@tanstack/react-start/server");
+        const request = getRequest();
         const result = await callApi<{ error: string | null; lead_id: string }>({
           path: "/api/leads",
           method: "POST",

@@ -67,7 +67,7 @@ type PortfolioLoaderResult = {
 // handlers").
 const loadPortfolioData = createServerFn({ method: "GET" })
   .validator((slug: string) => slug)
-  .handler(async ({ data: slug, request }): Promise<PortfolioLoaderResult | null> => {
+  .handler(async ({ data: slug }): Promise<PortfolioLoaderResult | null> => {
     const { isFastApiConfigured, callApi, ApiError } = await import("@/lib/api-client.server");
 
     let bundle: PortfolioBundle;
@@ -75,6 +75,8 @@ const loadPortfolioData = createServerFn({ method: "GET" })
     if (isFastApiConfigured()) {
       // FastAPI path: billing-safety gate + published-content bundle assembly.
       try {
+        const { getRequest } = await import("@tanstack/react-start/server");
+        const request = getRequest();
         bundle = await callApi<PortfolioBundle>({
           path: `/api/portfolio/${encodeURIComponent(slug)}`,
           method: "GET",

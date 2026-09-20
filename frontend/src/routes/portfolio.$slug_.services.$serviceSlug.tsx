@@ -46,13 +46,15 @@ type ServicePageLoaderResult = {
 // §7/§28.
 const loadServicePageData = createServerFn({ method: "GET" })
   .validator((data: { profileSlug: string; serviceSlug: string }) => data)
-  .handler(async ({ data, request }): Promise<ServicePageLoaderResult | null> => {
+  .handler(async ({ data }): Promise<ServicePageLoaderResult | null> => {
     const { isFastApiConfigured, callApi, ApiError } = await import("@/lib/api-client.server");
 
     let bundle: ServicePageBundle;
 
     if (isFastApiConfigured()) {
       try {
+        const { getRequest } = await import("@tanstack/react-start/server");
+        const request = getRequest();
         bundle = await callApi<ServicePageBundle>({
           path: `/api/portfolio/${encodeURIComponent(data.profileSlug)}/services/${encodeURIComponent(data.serviceSlug)}`,
           method: "GET",
