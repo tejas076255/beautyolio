@@ -49,17 +49,20 @@ const submitPortfolioLeadFn = createServerFn({ method: "POST" })
     const { isFastApiConfigured, callApi } = await import("@/lib/api-client.server");
 
     if (isFastApiConfigured()) {
-      // FastAPI path: lead creation + best-effort email notify.
-      const result = await callApi<{ error: string | null; lead_id: string }>({
-        path: "/api/leads",
-        method: "POST",
-        body: data,
-        request: { request },
-      });
-      return { error: result.error, leadId: result.lead_id };
+      try {
+        const result = await callApi<{ error: string | null; lead_id: string }>({
+          path: "/api/leads",
+          method: "POST",
+          body: data,
+          request: { request },
+        });
+        return { error: result.error, leadId: result.lead_id };
+      } catch (err) {
+        console.warn("FastAPI backend call failed, falling back to Supabase direct RPC:", err);
+      }
     }
 
-    // Direct Supabase fallback when FastAPI is not configured.
+    // Direct Supabase fallback when FastAPI is not configured or fails.
     const { submitPortfolioLead } = await import("@/data/leads-submit.server");
     return submitPortfolioLead(data);
   });
@@ -1666,100 +1669,82 @@ export function AvailabilitySection({
                   return;
                 }
                 setSubmitting(true);
-                // Real service_id when the selected name resolves to one of
-                // this profile's actual services — gives leads a genuine
-                // relational link (leads.service_id) instead of only the
-                // free-text _service_requested name (Phase 3F.6 §9).
-                const matchedService = allServiceItems.find((i) => i.name === service);
-                // Phase 3G.3A §9/§13/§14/§17/§18 — reads the session
-                // attribution snapshot captured on landing (or the last
-                // recognized-campaign touch) and this profile's most
-                // recently clicked CTA; falls back to availability_section
-                // when no tracked CTA preceded this submission, never
-                // inventing one. "portfolio" replaces the legacy
-                // "availability_request" value here to match the single
-                // canonical LEAD_SOURCES vocabulary already used everywhere
-                // else in the CRM (audited — see the phase report).
-                const attribution = getAttributionSnapshot(profile.slug);
-                const conversionPath = getConversionPath() || `/portfolio/${profile.slug}`;
-                const ctaLocation = attribution.cta_location ?? CtaLocation.AvailabilitySection;
-                const fullMessage = [
-                  timeSlot ? `Preferred Time: ${timeSlot}` : "",
-                  message.trim(),
-                ]
-                  .filter(Boolean)
-                  .join("\n");
-                const { error: rpcError } = await submitPortfolioLeadFn({
-                  data: {
-                    _slug: profile.slug,
-                    _name: name,
-                    _phone: phone,
-                    _location: location,
-                    _source: "portfolio",
-                    ...(date ? { _event_date: date } : {}),
-                    ...(service ? { _service_requested: service } : {}),
-                    ...(matchedService?.id ? { _service_id: matchedService.id } : {}),
-                    ...(fullMessage ? { _message: fullMessage } : {}),
-                    ...(attribution.utm_source ? { _utm_source: attribution.utm_source } : {}),
-                    ...(attribution.utm_medium ? { _utm_medium: attribution.utm_medium } : {}),
-                    ...(attribution.utm_campaign
-                      ? { _utm_campaign: attribution.utm_campaign }
-                      : {}),
-                    ...(attribution.utm_content ? { _utm_content: attribution.utm_content } : {}),
-                    ...(attribution.utm_term ? { _utm_term: attribution.utm_term } : {}),
-                    ...(attribution.landing_path
-                      ? { _landing_path: attribution.landing_path }
-                      : {}),
-                    _conversion_path: conversionPath,
-                    ...(attribution.referrer_host
-                      ? { _referrer_host: attribution.referrer_host }
-                      : {}),
-                    _cta_location: ctaLocation,
-                  },
-                });
-                setSubmitting(false);
-                if (rpcError) {
-                  setError(
-                    "Something went wrong sending your request — please try WhatsApp instead.",
-                  );
-                  return;
+                try {
+                  const matchedService = allServiceItems.find((i) => i.name === service);
+                  const attribution = getAttributionSnapshot(profile.slug);
+                  const conversionPath = getConversionPath() || `/portfolio/${profile.slug}`;
+                  const ctaLocation = attribution.cta_location ?? CtaLocation.AvailabilitySection;
+                  const fullMessage = [
+                    timeSlot ? `Preferred Time: ${timeSlot}` : "",
+                    message.trim(),
+                  ]
+                    .filter(Boolean)
+                    .join("\n");
+                  const { error: rpcError } = await submitPortfolioLeadFn({
+                    data: {
+                      _slug: profile.slug,
+                      _name: name,
+                      _phone: phone,
+                      _location: location,
+                      _source: "portfolio",
+                      ...(date ? { _event_date: date } : {}),
+                      ...(service ? { _service_requested: service } : {}),
+                      ...(matchedService?.id ? { _service_id: matchedService.id } : {}),
+                      ...(fullMessage ? { _message: fullMessage } : {}),
+                      ...(attribution.utm_source ? { _utm_source: attribution.utm_source } : {}),
+                      ...(attribution.utm_medium ? { _utm_medium: attribution.utm_medium } : {}),
+                      ...(attribution.utm_campaign
+                        ? { _utm_campaign: attribution.utm_campaign }
+                        : {}),
+                      ...(attribution.utm_content ? { _utm_content: attribution.utm_content } : {}),
+                      ...(attribution.utm_term ? { _utm_term: attribution.utm_term } : {}),
+                      ...(attribution.landing_path
+                        ? { _landing_path: attribution.landing_path }
+                        : {}),
+                      _conversion_path: conversionPath,
+                      ...(attribution.referrer_host
+                        ? { _referrer_host: attribution.referrer_host }
+                        : {}),
+                      _cta_location: ctaLocation,
+                    },
+                  });
+                  if (rpcError) {
+                    setError(
+                      "Something went wrong sending your request — please try WhatsApp instead.",
+                    );
+                    return;
+                  }
+                  trackEvent(AnalyticsEvent.AvailabilityFormSuccess, {
+                    profile_slug: profile.slug,
+                    page_path: `/portfolio/${profile.slug}`,
+                    service_id: matchedService?.id,
+                    service_name: service || undefined,
+                    event_date_present: !!date,
+                    lead_source: "portfolio",
+                    cta_location: ctaLocation,
+                    utm_source: attribution.utm_source,
+                    utm_medium: attribution.utm_medium,
+                    utm_campaign: attribution.utm_campaign,
+                  });
+                  trackEvent(AnalyticsEvent.LeadSubmit, {
+                    profile_slug: profile.slug,
+                    page_path: `/portfolio/${profile.slug}`,
+                    service_id: matchedService?.id,
+                    service_name: service || undefined,
+                    event_date_present: !!date,
+                    lead_source: "portfolio",
+                    cta_location: ctaLocation,
+                    utm_source: attribution.utm_source,
+                    utm_medium: attribution.utm_medium,
+                    utm_campaign: attribution.utm_campaign,
+                  });
+                  setSent(true);
+                } catch (err) {
+                  console.error("Error submitting lead:", err);
+                  setError("Something went wrong sending your request — please try WhatsApp instead.");
+                } finally {
+                  setSubmitting(false);
                 }
-                // Phase 3G.3 §13/§14, Phase 3G.3A §29 — fired ONLY after the
-                // server authoritatively confirms the enquiry was created;
-                // never on validation failure, never optimistically before
-                // this point. No PII: service/profile identifiers and the
-                // same non-PII attribution context now persisted to the
-                // database, never name/phone/message/location text (§9/§14).
-                trackEvent(AnalyticsEvent.AvailabilityFormSuccess, {
-                  profile_slug: profile.slug,
-                  page_path: `/portfolio/${profile.slug}`,
-                  service_id: matchedService?.id,
-                  service_name: service || undefined,
-                  event_date_present: !!date,
-                  lead_source: "portfolio",
-                  cta_location: ctaLocation,
-                  utm_source: attribution.utm_source,
-                  utm_medium: attribution.utm_medium,
-                  utm_campaign: attribution.utm_campaign,
-                });
-                // Per-portfolio GTM phase — the canonical marketing-conversion
-                // event, same trigger point and same non-PII payload as
-                // availability_form_success above (never name/phone/message/
-                // location — see that event's own note). Additive: does not
-                // replace the existing internal product event.
-                trackEvent(AnalyticsEvent.LeadSubmit, {
-                  profile_slug: profile.slug,
-                  page_path: `/portfolio/${profile.slug}`,
-                  service_id: matchedService?.id,
-                  service_name: service || undefined,
-                  event_date_present: !!date,
-                  lead_source: "portfolio",
-                  cta_location: ctaLocation,
-                  utm_source: attribution.utm_source,
-                  utm_medium: attribution.utm_medium,
-                  utm_campaign: attribution.utm_campaign,
-                });
-                setSent(true);
               }}
             >
               <div className="grid gap-4 sm:grid-cols-2">
