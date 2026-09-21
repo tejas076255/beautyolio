@@ -69,11 +69,12 @@ async function getPostLoginRedirect(): Promise<string> {
 
     const { data: bp } = await supabase
       .from("beautician_profiles")
-      .select("status")
+      .select("status, professional_title")
       .eq("profile_id", profile.id)
       .maybeSingle();
 
-    if (!bp || bp.status === "draft") return "/dashboard/profile";
+    if (!bp || !bp.professional_title) return "/onboarding";
+    if (bp.status === "draft") return "/dashboard/profile";
     return "/dashboard";
   } catch {
     return "/dashboard";

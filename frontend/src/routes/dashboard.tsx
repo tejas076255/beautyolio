@@ -70,6 +70,7 @@ const getOwnProfileSummaryFn = createServerFn({ method: "GET" })
     const profile = await getOwnProfile(context.supabase, context.userId);
     return {
       display_name: profile.display_name,
+      professional_title: profile.professional_title,
       profile_image_url: profile.profile_image_url,
       slug: profile.slug,
       status: profile.status,
@@ -283,6 +284,12 @@ function DashboardLayout() {
     }
   }, [ensureQuery.isError, isAuthError, navigate]);
 
+  useEffect(() => {
+    if (profileQuery.isSuccess && profileQuery.data && !profileQuery.data.professional_title) {
+      navigate({ to: "/onboarding" });
+    }
+  }, [profileQuery.isSuccess, profileQuery.data, navigate]);
+
   if (!checked || (!ensureQuery.isSuccess && !ensureQuery.isError)) {
     return (
       <div className="flex min-h-screen items-center justify-center text-sm text-muted-foreground">
@@ -302,6 +309,14 @@ function DashboardLayout() {
     return (
       <div className="flex min-h-screen items-center justify-center px-4 text-center text-sm text-destructive">
         {ensureErrMessage || "Failed to set up your portfolio."}
+      </div>
+    );
+  }
+
+  if (profileQuery.isSuccess && !profileQuery.data?.professional_title) {
+    return (
+      <div className="flex min-h-screen items-center justify-center text-sm text-muted-foreground">
+        Redirecting to onboarding…
       </div>
     );
   }
