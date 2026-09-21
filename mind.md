@@ -46,3 +46,15 @@ When a user doesn't upload a profile photo, the public portfolio hero section sh
 - Added `admin` role entry to `user_roles` table in Supabase for user `8200623024`.
 - User can now log in and access the `/admin` console dashboard.
 
+---
+
+## Fix: Admin Professionals `signup_source` Missing Column Error
+
+### Problem
+In `/admin/profiles` (Professionals list), the page threw an error `Failed to load profiles: column beautician_profiles.signup_source does not exist` because the `signup_source` column wasn't created yet in the active Supabase database schema.
+
+### Resolution
+- **Graceful Fallback**: Added fallback query handling in `frontend/src/data/admin/profiles.server.ts` (`listAllProfiles`) and `frontend/src/routes/admin.sources.tsx` (`listProfileSourcesFn`). If `signup_source` column does not exist in DB, it safely falls back without `signup_source` in SELECT and returns `signup_source: null` instead of crashing.
+- **Migration File**: Added `supabase/migrations/20260921220000_add_signup_source.sql` to add the column safely when database migrations are run.
+
+

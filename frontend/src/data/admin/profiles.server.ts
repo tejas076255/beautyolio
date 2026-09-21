@@ -48,7 +48,23 @@ export async function listAllProfiles(
     )
     .order("created_at", { ascending: false });
 
-  if (error) throw new Error(`Failed to load profiles: ${error.message}`);
+  if (error) {
+    if (error.message.includes("signup_source")) {
+      const { data: fallbackData, error: fallbackError } = await supabase
+        .from("beautician_profiles")
+        .select(
+          "id, slug, display_name, status, is_demo, is_verified, is_featured, created_at, review_count, client_count, plan, completion_score, billing_hold, plan_expires_at",
+        )
+        .order("created_at", { ascending: false });
+
+      if (fallbackError) throw new Error(`Failed to load profiles: ${fallbackError.message}`);
+      return (fallbackData ?? []).map((row) => ({
+        ...row,
+        signup_source: null,
+      })) as AdminProfileSummary[];
+    }
+    throw new Error(`Failed to load profiles: ${error.message}`);
+  }
   return data ?? [];
 }
 
@@ -290,7 +306,12 @@ export async function updateProfileSource(
     .from("beautician_profiles")
     .update({ signup_source })
     .eq("id", profileId);
-  if (error) throw new Error(`Failed to update source: ${error.message}`);
+  if (error) {
+    if (error.message.includes("signup_source")) {
+      throw new Error("Database column 'signup_source' has not been created yet in Supabase.");
+    }
+    throw new Error(`Failed to update source: ${error.message}`);
+  }
 
   await logAdminAction(
     supabase,

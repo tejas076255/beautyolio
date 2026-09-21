@@ -35,7 +35,16 @@ const listProfileSourcesFn = createServerFn({ method: "GET" })
       .from("beautician_profiles")
       .select("signup_source");
 
-    if (error) throw new Error(`Failed to load profiles: ${error.message}`);
+    if (error) {
+      if (error.message.includes("signup_source")) {
+        const { data: fallbackData, error: fallbackError } = await context.supabase
+          .from("beautician_profiles")
+          .select("id");
+        if (fallbackError) throw new Error(`Failed to load profiles: ${fallbackError.message}`);
+        return (fallbackData ?? []).map(() => ({ signup_source: null }));
+      }
+      throw new Error(`Failed to load profiles: ${error.message}`);
+    }
     return (data ?? []) as { signup_source: string | null }[];
   });
 
