@@ -79,7 +79,8 @@ export async function createServiceArea(
   const bpId = await getOwnBeauticianProfileId(supabase, userId);
   const { assertOwnerCanCreate } = await import("./plan-enforcement.server");
   await assertOwnerCanCreate(supabase, bpId, "service_areas");
-  return createServiceAreaForProfile(supabase, bpId, input);
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  return createServiceAreaForProfile(supabaseAdmin, bpId, input);
 }
 
 export async function updateServiceArea(

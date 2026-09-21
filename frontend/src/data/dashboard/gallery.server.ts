@@ -119,7 +119,8 @@ export async function createPortfolioItemWithImages(
   const bpId = await getOwnBeauticianProfileId(supabase, userId);
   const { assertOwnerCanAddGalleryPhotos } = await import("./plan-enforcement.server");
   await assertOwnerCanAddGalleryPhotos(supabase, bpId, input.images.length);
-  await createPortfolioItemForProfile(supabase, bpId, input);
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  await createPortfolioItemForProfile(supabaseAdmin, bpId, input);
 }
 
 /**
@@ -276,7 +277,8 @@ export async function addPortfolioImages(
   const bpId = await getOwnBeauticianProfileId(supabase, userId);
   const { assertOwnerCanAddGalleryPhotos } = await import("./plan-enforcement.server");
   await assertOwnerCanAddGalleryPhotos(supabase, bpId, images.length);
-  await addPortfolioImagesForProfile(supabase, bpId, itemId, images);
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  await addPortfolioImagesForProfile(supabaseAdmin, bpId, itemId, images);
 }
 
 /** Saves the beautician's own photo description for one gallery image —

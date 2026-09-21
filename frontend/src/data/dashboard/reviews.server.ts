@@ -54,7 +54,8 @@ export async function createReview(
   const bpId = await getOwnBeauticianProfileId(supabase, userId);
   const { assertOwnerCanCreate } = await import("./plan-enforcement.server");
   await assertOwnerCanCreate(supabase, bpId, "reviews");
-  const { error } = await supabase
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { error } = await supabaseAdmin
     .from("reviews")
     .insert({ ...input, beautician_profile_id: bpId });
   if (error) throw new Error(`Failed to add review: ${error.message}`);

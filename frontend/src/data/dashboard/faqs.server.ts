@@ -58,7 +58,8 @@ export async function createFaq(
   const bpId = await getOwnBeauticianProfileId(supabase, userId);
   const { assertOwnerCanCreate } = await import("./plan-enforcement.server");
   await assertOwnerCanCreate(supabase, bpId, "faqs");
-  await createFaqForProfile(supabase, bpId, input);
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  await createFaqForProfile(supabaseAdmin, bpId, input);
 }
 
 /**

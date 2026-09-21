@@ -79,7 +79,8 @@ export async function createPackage(
   const bpId = await getOwnBeauticianProfileId(supabase, userId);
   const { assertOwnerCanCreate } = await import("./plan-enforcement.server");
   await assertOwnerCanCreate(supabase, bpId, "packages");
-  await createPackageForProfile(supabase, bpId, input);
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  await createPackageForProfile(supabaseAdmin, bpId, input);
 }
 
 /**

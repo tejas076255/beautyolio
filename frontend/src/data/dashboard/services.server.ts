@@ -143,7 +143,8 @@ export async function createService(
   const bpId = await getOwnBeauticianProfileId(supabase, userId);
   const { assertOwnerCanCreate } = await import("./plan-enforcement.server");
   await assertOwnerCanCreate(supabase, bpId, "services");
-  await createServiceForProfile(supabase, bpId, input);
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  await createServiceForProfile(supabaseAdmin, bpId, input);
 }
 
 /**

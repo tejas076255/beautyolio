@@ -108,7 +108,8 @@ export async function createVideo(
   const bpId = await getOwnBeauticianProfileId(supabase, userId);
   const { assertOwnerCanCreate } = await import("./plan-enforcement.server");
   await assertOwnerCanCreate(supabase, bpId, "portfolio_videos");
-  await createVideoForProfile(supabase, bpId, input);
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  await createVideoForProfile(supabaseAdmin, bpId, input);
 }
 
 /**

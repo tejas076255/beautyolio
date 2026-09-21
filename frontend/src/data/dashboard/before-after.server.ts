@@ -143,7 +143,8 @@ export async function createBeforeAfterPair(
   const bpId = await getOwnBeauticianProfileId(supabase, userId);
   const { assertOwnerCanCreate } = await import("./plan-enforcement.server");
   await assertOwnerCanCreate(supabase, bpId, "before_after_items");
-  await createBeforeAfterPairForProfile(supabase, bpId, input);
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  await createBeforeAfterPairForProfile(supabaseAdmin, bpId, input);
 }
 
 /**
