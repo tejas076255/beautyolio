@@ -80,7 +80,6 @@ export async function ensureOwnPortfolio(
         // in the dashboard without requiring the user to go through
         // onboarding first.
         ...(profile.phone ? { phone: profile.phone, whatsapp_number: profile.phone } : {}),
-        ...(signupSource ? { signup_source: signupSource } : {}),
       })
       .select("slug")
       .single();
