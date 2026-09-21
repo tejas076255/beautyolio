@@ -33,3 +33,16 @@ When a user doesn't upload a profile photo, the public portfolio hero section sh
 - **File**: `frontend/src/components/portfolio/portfolio-sections.tsx` (PortfolioHeroSection)
 - **Change**: Replaced the gradient+Sparkles `<div>` fallback with a proper default avatar image (`/default-profile-avatar.jpg`) — a professional silhouette placeholder matching the BeautyFolio brand colors.
 - **Asset**: `frontend/public/default-profile-avatar.jpg` — new file added.
+
+---
+
+## Admin Role Assignment
+
+### Account
+- **Phone Number**: `8200623024` (`918200623024@beuati.app`)
+- **User ID**: `8ade1a3b-c80c-48b2-b868-e0271ef82854`
+
+### Change
+- Added `admin` role entry to `user_roles` table in Supabase for user `8200623024`.
+- User can now log in and access the `/admin` console dashboard.
+
