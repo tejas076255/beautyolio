@@ -315,16 +315,15 @@ export function PortfolioHeroSection({ profile }: P) {
               className="aspect-[4/5] w-full rounded-3xl object-cover object-top shadow-lift"
             />
           ) : (
-            // Genuine no-photo state (Phase 3F.9A) — never a fabricated
-            // fallback photo. Matches the dashboard's own "No photo" circle
-            // language, scaled up for the hero frame.
-            <div
-              className="bg-gradient-brand flex aspect-[4/5] w-full items-center justify-center rounded-3xl shadow-lift"
-              role="img"
-              aria-label={`${profile.name}, ${profile.role} in ${profile.primaryCity}`}
-            >
-              <Sparkles className="h-14 w-14 text-primary-foreground/80" aria-hidden="true" />
-            </div>
+            <img
+              src="/default-profile-avatar.jpg"
+              alt={`${profile.name}, ${profile.role} in ${profile.primaryCity}`}
+              width={900}
+              height={1100}
+              fetchPriority="high"
+              decoding="async"
+              className="aspect-[4/5] w-full rounded-3xl object-cover object-center shadow-lift"
+            />
           )}
           {/* Phase 3G.1 §21 — was static, unverified "Next available
               date: Booking for this wedding season" copy with no real

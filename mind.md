@@ -19,5 +19,17 @@ Optimized the onboarding submission and initial page load speed by removing bloc
 
 ### 3. Removed Redundant `SELECT` Query Before Profile Updates
 - **File**: `frontend/src/data/dashboard/profile.server.ts`
-- **Change**: In `updateProfileForProfile`, removed the pre-flight `SELECT id FROM beautician_profiles` check prior to running the `UPDATE` query.
+- **Change**: In `updateProfileForProfile`, removed the pre-flight `SELECT id` query prior to running the `UPDATE` query.
 - **Impact**: Eliminates an unnecessary DB roundtrip every time an onboarding step (Step 1, Step 2, Step 3) is saved.
+
+---
+
+## Default Profile Avatar (No-Photo Fallback)
+
+### Problem
+When a user doesn't upload a profile photo, the public portfolio hero section showed a plain gradient background with a Sparkles icon — looked empty and unprofessional.
+
+### Change
+- **File**: `frontend/src/components/portfolio/portfolio-sections.tsx` (PortfolioHeroSection)
+- **Change**: Replaced the gradient+Sparkles `<div>` fallback with a proper default avatar image (`/default-profile-avatar.jpg`) — a professional silhouette placeholder matching the BeautyFolio brand colors.
+- **Asset**: `frontend/public/default-profile-avatar.jpg` — new file added.
