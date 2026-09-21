@@ -90,15 +90,6 @@ export async function updateProfileForProfile(
   bpId: string,
   updates: OwnProfileUpdate,
 ): Promise<void> {
-  const { data: existing, error: fetchError } = await supabase
-    .from("beautician_profiles")
-    .select("id")
-    .eq("id", bpId)
-    .maybeSingle();
-  if (fetchError || !existing) {
-    throw new Error(`Failed to load profile: ${fetchError?.message ?? "not found"}`);
-  }
-
   const { error } = await supabase.from("beautician_profiles").update(updates).eq("id", bpId);
 
   if (error) {

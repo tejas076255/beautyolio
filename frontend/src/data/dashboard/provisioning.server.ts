@@ -4,7 +4,7 @@
 // policy already allows an authenticated user to insert a row scoped to
 // their own profiles.id — this file only decides *what* to insert.
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Database } from "@/integrations/supabase/types";
+import type { Database, Tables } from "@/integrations/supabase/types";
 import { slugify } from "@/lib/slugify";
 
 function randomSuffix(): string {
@@ -15,7 +15,7 @@ export async function ensureOwnPortfolio(
   supabase: SupabaseClient<Database>,
   userId: string,
   signupSource?: string,
-): Promise<{ slug: string; created: boolean }> {
+): Promise<{ slug: string; created: boolean; profile: Tables<"beautician_profiles"> }> {
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
     .select("id, display_name, email, phone")
@@ -28,7 +28,7 @@ export async function ensureOwnPortfolio(
 
   const { data: existing, error: existingError } = await supabase
     .from("beautician_profiles")
-    .select("id, slug, status")
+    .select("*")
     .eq("profile_id", profile.id)
     .maybeSingle();
 
@@ -36,32 +36,27 @@ export async function ensureOwnPortfolio(
     throw new Error(`Failed to check for an existing portfolio: ${existingError.message}`);
   }
   if (existing) {
-    // Billing Phase A: reconcile commercial state on every dashboard visit
-    // (this function runs on every load via dashboard.tsx's ensurePortfolioFn,
-    // plus once right after signup). Trusted server-side only — the
-    // authenticated browser session never receives direct RPC EXECUTE on
-    // reconcile_commercial_state(); supabaseAdmin is dynamically imported
-    // here, same convention as every other service-role call site. Non-
-    // fatal on failure: dashboard availability never depends on this
-    // succeeding, matching how this function's own callers already treat
-    // provisioning errors as non-fatal (see signup.tsx).
-    try {
-      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-      if (existing.status === "draft") {
-        await supabaseAdmin
-          .from("beautician_profiles")
-          .update({ status: "published" })
-          .eq("id", existing.id);
+    // Billing Phase A: reconcile commercial state on every dashboard visit.
+    // Executed asynchronously in background so response is not delayed.
+    (async () => {
+      try {
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        if (existing.status === "draft") {
+          await supabaseAdmin
+            .from("beautician_profiles")
+            .update({ status: "published" })
+            .eq("id", existing.id);
+        }
+        const { reconcileCommercialState } = await import("@/data/billing/commercial-state.server");
+        await reconcileCommercialState(supabaseAdmin, existing.id);
+      } catch (err) {
+        console.error(
+          `[provisioning] commercial-state reconciliation failed for profile ${existing.id}`,
+          err,
+        );
       }
-      const { reconcileCommercialState } = await import("@/data/billing/commercial-state.server");
-      await reconcileCommercialState(supabaseAdmin, existing.id);
-    } catch (err) {
-      console.error(
-        `[provisioning] commercial-state reconciliation failed for profile ${existing.id}`,
-        err,
-      );
-    }
-    return { slug: existing.slug, created: false };
+    })();
+    return { slug: existing.slug, created: false, profile: existing };
   }
 
   const displayName = profile.display_name?.trim() || profile.email?.split("@")[0] || "beautician";
@@ -81,11 +76,11 @@ export async function ensureOwnPortfolio(
         // onboarding first.
         ...(profile.phone ? { phone: profile.phone, whatsapp_number: profile.phone } : {}),
       })
-      .select("slug")
+      .select("*")
       .single();
 
     if (!insertError && created) {
-      return { slug: created.slug, created: true };
+      return { slug: created.slug, created: true, profile: created };
     }
 
     // 23505 = unique_violation (slug already taken) — retry with a suffix.

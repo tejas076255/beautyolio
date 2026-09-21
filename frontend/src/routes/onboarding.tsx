@@ -52,7 +52,7 @@ const uploadImageFn = createServerFn({ method: "POST" })
 
     // Decode base64 data URL
     const matches = data.dataUrl.match(/^data:([^;]+);base64,(.+)$/);
-    if (!matches) throw new Error("Invalid image data.");
+    if (!matches || !matches[1] || !matches[2]) throw new Error("Invalid image data.");
     const mimeType = matches[1];
     const base64Data = matches[2];
 
@@ -87,18 +87,10 @@ const getOnboardingContextFn = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { ensureOwnPortfolio } = await import("@/data/dashboard/provisioning.server");
-    const { getOwnBeauticianProfileId } = await import("@/data/dashboard/shared.server");
-    const { getProfileForProfile } = await import("@/data/dashboard/profile.server");
 
-    // Guarantee beautician profile row exists for new signups
-    try {
-      await ensureOwnPortfolio(context.supabase, context.userId, "Direct");
-    } catch (e) {
-      console.error("[onboarding] ensureOwnPortfolio failed", e);
-    }
+    const res = await ensureOwnPortfolio(context.supabase, context.userId, "Direct");
+    const profile = res.profile;
 
-    const bpId = await getOwnBeauticianProfileId(context.supabase, context.userId);
-    const profile = await getProfileForProfile(context.supabase, bpId);
     return {
       slug: profile.slug,
       display_name: profile.display_name ?? "",
@@ -132,14 +124,14 @@ const saveStep1Fn = createServerFn({ method: "POST" })
   .validator((d: SaveStep1Input) => d)
   .handler(async ({ context, data }) => {
     const { updateOwnProfile } = await import("@/data/dashboard/profile.server");
-    await updateOwnProfile(context.supabase, context.userId, {
-      display_name: data.display_name || undefined,
-      professional_title: data.professional_title || undefined,
-      short_tagline: data.short_tagline || undefined,
-      years_experience: data.years_experience,
-      profile_image_url: data.profile_image_url,
-      cover_image_url: data.cover_image_url,
-    });
+    const updates: Parameters<typeof updateOwnProfile>[2] = {};
+    if (data.display_name) updates.display_name = data.display_name;
+    if (data.professional_title) updates.professional_title = data.professional_title;
+    if (data.short_tagline) updates.short_tagline = data.short_tagline;
+    if (data.years_experience !== undefined) updates.years_experience = data.years_experience;
+    if (data.profile_image_url !== undefined) updates.profile_image_url = data.profile_image_url;
+    if (data.cover_image_url !== undefined) updates.cover_image_url = data.cover_image_url;
+    await updateOwnProfile(context.supabase, context.userId, updates);
   });
 
 interface SaveStep2Input {
@@ -153,11 +145,11 @@ const saveStep2Fn = createServerFn({ method: "POST" })
   .validator((d: SaveStep2Input) => d)
   .handler(async ({ context, data }) => {
     const { updateOwnProfile } = await import("@/data/dashboard/profile.server");
-    await updateOwnProfile(context.supabase, context.userId, {
-      whatsapp_number: data.whatsapp_number || undefined,
-      email: data.email || undefined,
-      website_url: data.website_url || undefined,
-    });
+    const updates: Parameters<typeof updateOwnProfile>[2] = {};
+    if (data.whatsapp_number) updates.whatsapp_number = data.whatsapp_number;
+    if (data.email) updates.email = data.email;
+    if (data.website_url) updates.website_url = data.website_url;
+    await updateOwnProfile(context.supabase, context.userId, updates);
   });
 
 interface SaveStep3Input {
@@ -171,11 +163,11 @@ const saveStep3Fn = createServerFn({ method: "POST" })
   .validator((d: SaveStep3Input) => d)
   .handler(async ({ context, data }) => {
     const { updateOwnProfile } = await import("@/data/dashboard/profile.server");
-    await updateOwnProfile(context.supabase, context.userId, {
-      primary_city: data.primary_city || undefined,
-      locality: data.locality || undefined,
-      state: data.state || undefined,
-    });
+    const updates: Parameters<typeof updateOwnProfile>[2] = {};
+    if (data.primary_city) updates.primary_city = data.primary_city;
+    if (data.locality) updates.locality = data.locality;
+    if (data.state) updates.state = data.state;
+    await updateOwnProfile(context.supabase, context.userId, updates);
   });
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
