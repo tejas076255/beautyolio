@@ -86,8 +86,17 @@ const uploadImageFn = createServerFn({ method: "POST" })
 const getOnboardingContextFn = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
+    const { ensureOwnPortfolio } = await import("@/data/dashboard/provisioning.server");
     const { getOwnBeauticianProfileId } = await import("@/data/dashboard/shared.server");
     const { getProfileForProfile } = await import("@/data/dashboard/profile.server");
+
+    // Guarantee beautician profile row exists for new signups
+    try {
+      await ensureOwnPortfolio(context.supabase, context.userId, "Direct");
+    } catch (e) {
+      console.error("[onboarding] ensureOwnPortfolio failed", e);
+    }
+
     const bpId = await getOwnBeauticianProfileId(context.supabase, context.userId);
     const profile = await getProfileForProfile(context.supabase, bpId);
     return {
@@ -719,10 +728,21 @@ function OnboardingPage() {
 
   // ── Render ───────────────────────────────────────────────────────────────
 
-  if (loading || !ctx) {
+  if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center text-sm text-muted-foreground">
         Setting up your profile…
+      </div>
+    );
+  }
+
+  if (!ctx) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center gap-3 px-4 text-center">
+        <p className="text-sm text-muted-foreground">Could not load profile details.</p>
+        <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
+          Retry
+        </Button>
       </div>
     );
   }
