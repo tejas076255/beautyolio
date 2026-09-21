@@ -79,21 +79,21 @@ CREATE OR REPLACE FUNCTION public.get_plan_content_limit(_plan public.portfolio_
 RETURNS INTEGER LANGUAGE sql IMMUTABLE AS $$
   SELECT CASE _key
     WHEN 'services' THEN
-      CASE _plan WHEN 'free' THEN 5 WHEN 'starter' THEN 10 WHEN 'silver' THEN 20 WHEN 'gold' THEN 50 WHEN 'platinum' THEN 150 END
+      CASE _plan WHEN 'free' THEN 20 WHEN 'starter' THEN 10 WHEN 'silver' THEN 20 WHEN 'gold' THEN 50 WHEN 'platinum' THEN 150 END
     WHEN 'packages' THEN
-      CASE _plan WHEN 'free' THEN 0 WHEN 'starter' THEN 5 WHEN 'silver' THEN 15 WHEN 'gold' THEN 40 WHEN 'platinum' THEN 100 END
+      CASE _plan WHEN 'free' THEN 20 WHEN 'starter' THEN 5 WHEN 'silver' THEN 15 WHEN 'gold' THEN 40 WHEN 'platinum' THEN 100 END
     WHEN 'gallery_photos' THEN
-      CASE _plan WHEN 'free' THEN 12 WHEN 'starter' THEN 30 WHEN 'silver' THEN 75 WHEN 'gold' THEN 150 WHEN 'platinum' THEN 300 END
+      CASE _plan WHEN 'free' THEN 20 WHEN 'starter' THEN 30 WHEN 'silver' THEN 75 WHEN 'gold' THEN 150 WHEN 'platinum' THEN 300 END
     WHEN 'before_after_items' THEN
-      CASE _plan WHEN 'free' THEN 3 WHEN 'starter' THEN 10 WHEN 'silver' THEN 25 WHEN 'gold' THEN 60 WHEN 'platinum' THEN 120 END
+      CASE _plan WHEN 'free' THEN 20 WHEN 'starter' THEN 10 WHEN 'silver' THEN 25 WHEN 'gold' THEN 60 WHEN 'platinum' THEN 120 END
     WHEN 'portfolio_videos' THEN
-      CASE _plan WHEN 'free' THEN 0 WHEN 'starter' THEN 0 WHEN 'silver' THEN 5 WHEN 'gold' THEN 15 WHEN 'platinum' THEN 30 END
+      CASE _plan WHEN 'free' THEN 20 WHEN 'starter' THEN 0 WHEN 'silver' THEN 5 WHEN 'gold' THEN 15 WHEN 'platinum' THEN 30 END
     WHEN 'faqs' THEN
-      CASE _plan WHEN 'free' THEN 5 WHEN 'starter' THEN 10 WHEN 'silver' THEN 20 WHEN 'gold' THEN 40 WHEN 'platinum' THEN 80 END
+      CASE _plan WHEN 'free' THEN 20 WHEN 'starter' THEN 10 WHEN 'silver' THEN 20 WHEN 'gold' THEN 40 WHEN 'platinum' THEN 80 END
     WHEN 'service_areas' THEN
-      CASE _plan WHEN 'free' THEN 3 WHEN 'starter' THEN 8 WHEN 'silver' THEN 20 WHEN 'gold' THEN 50 WHEN 'platinum' THEN 100 END
+      CASE _plan WHEN 'free' THEN 20 WHEN 'starter' THEN 8 WHEN 'silver' THEN 20 WHEN 'gold' THEN 50 WHEN 'platinum' THEN 100 END
     WHEN 'reviews' THEN
-      CASE _plan WHEN 'free' THEN 0 WHEN 'starter' THEN 20 WHEN 'silver' THEN 50 WHEN 'gold' THEN 100 WHEN 'platinum' THEN 200 END
+      CASE _plan WHEN 'free' THEN 20 WHEN 'starter' THEN 20 WHEN 'silver' THEN 50 WHEN 'gold' THEN 100 WHEN 'platinum' THEN 200 END
     ELSE NULL
   END;
 $$;

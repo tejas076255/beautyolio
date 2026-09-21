@@ -63,14 +63,14 @@ export const MODULE_LABELS: Record<PlanLimitedModule, string> = {
 // Canonical FINAL CONTENT LIMITS matrix. Mirrored in SQL by
 // public.get_plan_content_limit() in the plan-entitlements migration.
 const LIMITS: Record<PlanLimitedModule, Record<PortfolioPlan, number>> = {
-  services: { free: 5, starter: 10, silver: 20, gold: 50, platinum: 150 },
-  packages: { free: 0, starter: 5, silver: 15, gold: 40, platinum: 100 },
-  gallery_photos: { free: 12, starter: 30, silver: 75, gold: 150, platinum: 300 },
-  before_after_items: { free: 3, starter: 10, silver: 25, gold: 60, platinum: 120 },
-  portfolio_videos: { free: 0, starter: 0, silver: 5, gold: 15, platinum: 30 },
-  faqs: { free: 5, starter: 10, silver: 20, gold: 40, platinum: 80 },
-  service_areas: { free: 3, starter: 8, silver: 20, gold: 50, platinum: 100 },
-  reviews: { free: 0, starter: 20, silver: 50, gold: 100, platinum: 200 },
+  services: { free: 20, starter: 10, silver: 20, gold: 50, platinum: 150 },
+  packages: { free: 20, starter: 5, silver: 15, gold: 40, platinum: 100 },
+  gallery_photos: { free: 20, starter: 30, silver: 75, gold: 150, platinum: 300 },
+  before_after_items: { free: 20, starter: 10, silver: 25, gold: 60, platinum: 120 },
+  portfolio_videos: { free: 20, starter: 0, silver: 5, gold: 15, platinum: 30 },
+  faqs: { free: 20, starter: 10, silver: 20, gold: 40, platinum: 80 },
+  service_areas: { free: 20, starter: 8, silver: 20, gold: 50, platinum: 100 },
+  reviews: { free: 20, starter: 20, silver: 50, gold: 100, platinum: 200 },
 };
 
 export function getPlanLimit(plan: PortfolioPlan, module: PlanLimitedModule): number {
