@@ -655,13 +655,23 @@ function OnboardingPage() {
       try {
         const data = await getOnboardingContextFn();
         if (data.alreadyOnboarded) {
-          navigate({ to: "/dashboard" });
+          navigate({ to: "/dashboard", replace: true });
           return;
         }
         setCtx(data);
-      } catch {
-        // provisioning not done yet — rare, just go to dashboard
-        navigate({ to: "/dashboard" });
+      } catch (err) {
+        console.warn("[onboarding] retrying context fetch...", err);
+        try {
+          await new Promise((res) => setTimeout(res, 500));
+          const data = await getOnboardingContextFn();
+          if (data.alreadyOnboarded) {
+            navigate({ to: "/dashboard", replace: true });
+            return;
+          }
+          setCtx(data);
+        } catch {
+          // If second attempt fails, context loading error will keep loading=false
+        }
       } finally {
         setLoading(false);
       }

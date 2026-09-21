@@ -286,14 +286,14 @@ function DashboardLayout() {
 
   useEffect(() => {
     if (profileQuery.isSuccess && profileQuery.data && !profileQuery.data.professional_title) {
-      navigate({ to: "/onboarding" });
+      navigate({ to: "/onboarding", replace: true });
     }
   }, [profileQuery.isSuccess, profileQuery.data, navigate]);
 
-  if (!checked || (!ensureQuery.isSuccess && !ensureQuery.isError)) {
+  if (!checked || (!ensureQuery.isSuccess && !ensureQuery.isError) || profileQuery.isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center text-sm text-muted-foreground">
-        {checked ? "Setting up your portfolio…" : "Checking session…"}
+        {!checked ? "Checking session…" : "Setting up your portfolio…"}
       </div>
     );
   }
