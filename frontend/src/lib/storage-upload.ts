@@ -28,7 +28,7 @@ export const IMAGE_GUIDELINES: Record<MediaCategory, string> = {
   profile: "Portrait, ideally 1000×1250px (4:5 ratio)",
   gallery: "Square or near-square, ideally 1200×1200px",
   "before-after": "Portrait, ideally 1000×1250px (4:5 ratio), matching for both images",
-  "video-thumbnails": "Widescreen, ideally 1280×720px (16:9 ratio)",
+  "video-thumbnails": "Portrait, ideally 1000×1250px (4:5 ratio)",
 };
 
 export const UPLOAD_HINT = `JPG, PNG or WebP · up to ${MAX_UPLOAD_SIZE_MB}MB`;

@@ -41,6 +41,19 @@ When a user does not upload a profile picture / avatar, their profile identity c
 
 ---
 
+## Video Thumbnail Guideline (1000×1250px 4:5 Ratio)
+
+### Requirement
+Set the recommended image size & aspect ratio helper text for Video Thumbnail images to match Before & After images (`Portrait, ideally 1000×1250px (4:5 ratio)`).
+
+### Changes Made
+- **File**: `frontend/src/lib/storage-upload.ts`
+  - Updated `IMAGE_GUIDELINES["video-thumbnails"]` to `"Portrait, ideally 1000×1250px (4:5 ratio)"`.
+- **File**: `frontend/src/components/videos/video-manager.tsx`
+  - Connected `IMAGE_GUIDELINES["video-thumbnails"]` in the Video Thumbnail upload dropzone label so the UI helper text displays `"Portrait, ideally 1000×1250px (4:5 ratio) · JPG, PNG or WebP · up to 5MB"`.
+
+---
+
 ## Admin Role Assignment
 
 ### Account

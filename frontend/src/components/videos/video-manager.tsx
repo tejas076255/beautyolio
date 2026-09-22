@@ -26,6 +26,7 @@ import {
   uploadPortfolioVideo,
   buildPublicMediaUrl,
   deletePortfolioMedia,
+  IMAGE_GUIDELINES,
   UPLOAD_HINT,
   VIDEO_UPLOAD_HINT,
 } from "@/lib/storage-upload";
@@ -589,7 +590,9 @@ function VideoFormDialog({
                         <span className="text-sm font-semibold">
                           Choose thumbnail or drag &amp; drop
                         </span>
-                        <span className="text-xs text-muted-foreground">{UPLOAD_HINT}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {IMAGE_GUIDELINES["video-thumbnails"]} · {UPLOAD_HINT}
+                        </span>
                         <input
                           id="thumbnail-upload-input"
                           ref={thumbnailInputRef}
