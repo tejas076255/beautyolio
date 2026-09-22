@@ -863,15 +863,13 @@ function ServicePage() {
             rather than duplicating the About section (Phase 3F.6 §19) */}
         <section className="mt-10 rounded-2xl border border-border bg-secondary/20 p-5">
           <p className="text-sm text-muted-foreground">
-            {portrait && (
-              <img
-                src={portrait}
-                alt=""
-                width={40}
-                height={40}
-                className="mr-3 inline-block h-10 w-10 rounded-full object-cover align-middle"
-              />
-            )}
+            <img
+              src={portrait || "/default-profile-avatar.jpg"}
+              alt=""
+              width={40}
+              height={40}
+              className="mr-3 inline-block h-10 w-10 rounded-full object-cover align-middle"
+            />
             See {professionalName}'s full portfolio — work, reviews and availability.
           </p>
           <div className="mt-3 flex flex-wrap gap-2">

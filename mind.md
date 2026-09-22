@@ -27,12 +27,17 @@ Optimized the onboarding submission and initial page load speed by removing bloc
 ## Default Profile Avatar (No-Photo Fallback)
 
 ### Problem
-When a user doesn't upload a profile photo, the public portfolio hero section showed a plain gradient background with a Sparkles icon — looked empty and unprofessional.
+When a user does not upload a profile picture / avatar, their profile identity card, dashboard header, onboarding photo step, public portfolio hero section, and admin screens rendered empty initial circles or missing image placeholders.
 
-### Change
-- **File**: `frontend/src/components/portfolio/portfolio-sections.tsx` (PortfolioHeroSection)
-- **Change**: Replaced the gradient+Sparkles `<div>` fallback with a proper default avatar image (`/default-profile-avatar.jpg`) — a professional silhouette placeholder matching the BeautyFolio brand colors.
-- **Asset**: `frontend/public/default-profile-avatar.jpg` — new file added.
+### Change & Resolution
+- **Asset Updated**: Replaced `frontend/public/default-profile-avatar.jpg` with the official BeautyFolio purple heart star logo asset.
+- **Components Updated**:
+  - `frontend/src/components/portfolio/portfolio-sections.tsx` (`PortfolioHeroSection`): Uses `/default-profile-avatar.jpg` when `profile.portrait` is null/empty.
+  - `frontend/src/components/profile/profile-manager.tsx`: Renders `/default-profile-avatar.jpg` instead of "No photo" box when user has not set a photo.
+  - `frontend/src/routes/dashboard.tsx`: Displays `/default-profile-avatar.jpg` in top navigation header avatar when photo is missing.
+  - `frontend/src/routes/onboarding.tsx`: Displays `/default-profile-avatar.jpg` in Step 1 profile photo preview.
+  - `frontend/src/routes/portfolio.$slug_.services.$serviceSlug.tsx`: Displays `/default-profile-avatar.jpg` fallback for service author badge.
+  - `frontend/src/routes/admin.beauticians.$slug.tsx`: Displays `/default-profile-avatar.jpg` in admin beautician header.
 
 ---
 

@@ -760,17 +760,11 @@ function TargetProfileHeader({ profile }: { profile: AdminTargetProfile }) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-border bg-card p-5 shadow-soft">
       <div className="flex min-w-0 items-center gap-4">
-        {profile.profile_image_url ? (
-          <img
-            src={profile.profile_image_url}
-            alt=""
-            className="h-16 w-16 shrink-0 rounded-full object-cover"
-          />
-        ) : (
-          <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-secondary text-lg font-semibold text-muted-foreground">
-            {profile.display_name.slice(0, 1).toUpperCase()}
-          </span>
-        )}
+        <img
+          src={profile.profile_image_url || "/default-profile-avatar.jpg"}
+          alt=""
+          className="h-16 w-16 shrink-0 rounded-full object-cover"
+        />
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <p className="truncate font-display text-xl font-semibold">

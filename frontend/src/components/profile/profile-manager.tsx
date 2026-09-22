@@ -735,17 +735,11 @@ export function ProfileManager({
                   <div className="flex items-end gap-4">
                     <div className="-mt-10 flex shrink-0 flex-col items-center gap-1 sm:-mt-12">
                       <div className="relative group">
-                        {photoUrl ? (
-                          <img
-                            src={photoUrl}
-                            alt=""
-                            className="h-20 w-20 rounded-full border-4 border-card object-cover shadow-md sm:h-24 sm:w-24"
-                          />
-                        ) : (
-                          <div className="flex h-20 w-20 items-center justify-center rounded-full border-4 border-card bg-secondary text-[10px] text-muted-foreground shadow-md sm:h-24 sm:w-24">
-                            No photo
-                          </div>
-                        )}
+                        <img
+                          src={photoUrl || "/default-profile-avatar.jpg"}
+                          alt=""
+                          className="h-20 w-20 rounded-full border-4 border-card object-cover shadow-md sm:h-24 sm:w-24"
+                        />
                         <label
                           htmlFor="profile-photo-input"
                           aria-label="Upload profile photo"

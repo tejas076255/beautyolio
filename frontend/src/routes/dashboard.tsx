@@ -337,17 +337,11 @@ function DashboardLayout() {
           <div className="flex flex-1 flex-wrap items-center justify-end gap-3">
             {name && (
               <div className="flex items-center gap-2">
-                {photo ? (
-                  <img
-                    src={photo}
-                    alt={name}
-                    className="h-8 w-8 rounded-full border border-border object-cover"
-                  />
-                ) : (
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary text-xs font-semibold">
-                    {initial}
-                  </span>
-                )}
+                <img
+                  src={photo || "/default-profile-avatar.jpg"}
+                  alt={name}
+                  className="h-8 w-8 rounded-full border border-border object-cover"
+                />
                 <span className="text-sm font-medium">{name}</span>
               </div>
             )}

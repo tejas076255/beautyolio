@@ -383,17 +383,11 @@ function Step1({
         <div className="flex items-end gap-3 px-4 pb-3 pt-0">
           {/* Avatar — pulled up to overlap cover */}
           <div className="relative -mt-8 shrink-0">
-            {photoUrl ? (
-              <img
-                src={photoUrl}
-                alt="Profile"
-                className="h-16 w-16 rounded-full border-4 border-card object-cover shadow-md"
-              />
-            ) : (
-              <div className="flex h-16 w-16 items-center justify-center rounded-full border-4 border-card bg-muted text-[9px] font-medium text-muted-foreground shadow-md">
-                No photo
-              </div>
-            )}
+            <img
+              src={photoUrl || "/default-profile-avatar.jpg"}
+              alt="Profile"
+              className="h-16 w-16 rounded-full border-4 border-card object-cover shadow-md"
+            />
             {uploadingPhoto && (
               <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40">
                 <span className="text-[8px] text-white">…</span>
