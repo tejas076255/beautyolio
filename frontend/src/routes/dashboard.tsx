@@ -284,11 +284,7 @@ function DashboardLayout() {
     }
   }, [ensureQuery.isError, isAuthError, navigate]);
 
-  useEffect(() => {
-    if (profileQuery.isSuccess && profileQuery.data && !profileQuery.data.professional_title) {
-      navigate({ to: "/onboarding", replace: true });
-    }
-  }, [profileQuery.isSuccess, profileQuery.data, navigate]);
+
 
   if (!checked || (!ensureQuery.isSuccess && !ensureQuery.isError) || profileQuery.isLoading) {
     return (

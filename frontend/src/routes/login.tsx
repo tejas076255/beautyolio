@@ -73,7 +73,7 @@ async function getPostLoginRedirect(): Promise<string> {
       .eq("profile_id", profile.id)
       .maybeSingle();
 
-    if (!bp || !bp.professional_title) return "/onboarding";
+    if (!bp) return "/dashboard";
     if (bp.status === "draft") return "/dashboard/profile";
     return "/dashboard";
   } catch {
