@@ -29,6 +29,7 @@ import {
   evaluateServiceIndexability,
   resolveServiceSlug,
 } from "@/lib/seo-helpers";
+import { formatWhatsappNumber } from "@/lib/phone";
 import { absoluteUrl } from "@/lib/site-url";
 import { safeJsonLd } from "@/lib/json-ld";
 import type { ServicePageBundle } from "@/data/service-page-query.server";
@@ -381,7 +382,7 @@ function ServicePage() {
   };
 
   const waHref = profile.whatsapp_number
-    ? `https://wa.me/${profile.whatsapp_number.replace(/\D/g, "")}?text=${encodeURIComponent(
+    ? `https://wa.me/${formatWhatsappNumber(profile.whatsapp_number)}?text=${encodeURIComponent(
         `Hi ${professionalName.split(" ")[0]}, I'd like to check availability for ${service.name}.`,
       )}`
     : null;

@@ -17,6 +17,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
+import { resolveMapEmbedSrc } from "@/components/portfolio/portfolio-sections";
 import {
   Briefcase,
   Camera,
@@ -118,6 +119,18 @@ function extractMapEmbedUrl(value: string): string {
   if (!trimmed.includes("<iframe")) return trimmed;
   const match = trimmed.match(/src="([^"]+)"/);
   return match?.[1] ?? trimmed;
+}
+
+function buildLocationQuery(
+  address?: string,
+  locality?: string,
+  city?: string,
+  state?: string,
+): string {
+  return [address, locality, city, state, "India"]
+    .map((s) => (s ?? "").trim())
+    .filter(Boolean)
+    .join(", ");
 }
 
 function toLineArray(text: string): string[] {
@@ -378,6 +391,33 @@ export function ProfileManager({
     resolver: zodResolver(profileSchema),
     defaultValues: EMPTY_VALUES,
   });
+
+  const watchAddress = form.watch("address");
+  const watchLocality = form.watch("locality");
+  const watchCity = form.watch("primary_city");
+  const watchState = form.watch("state");
+
+  const derivedLocationQuery = buildLocationQuery(
+    watchAddress,
+    watchLocality,
+    watchCity,
+    watchState,
+  );
+
+  const handleAutoGenerateMap = () => {
+    const generated = buildLocationQuery(
+      form.getValues("address"),
+      form.getValues("locality"),
+      form.getValues("primary_city"),
+      form.getValues("state"),
+    );
+    if (!generated || generated === "India") {
+      toast.error("Please fill in City, Locality, or Studio address first.");
+      return;
+    }
+    form.setValue("map_query", generated, { shouldDirty: true });
+    toast.success("Map embed updated from address!");
+  };
 
   useEffect(() => {
     if (!profile) return;
@@ -1025,16 +1065,50 @@ export function ProfileManager({
                     name="map_query"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Map embed (optional)</FormLabel>
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <FormLabel>Map embed (optional)</FormLabel>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={handleAutoGenerateMap}
+                            className="h-7 px-2.5 text-xs text-primary hover:text-primary border-primary/20"
+                          >
+                            ⚡ Auto-generate from address
+                          </Button>
+                        </div>
                         <FormControl>
-                          <Input placeholder="https://www.google.com/maps/embed?pb=…" {...field} />
+                          <Input
+                            placeholder="e.g. Girish Juice Corner, Navrangpura, Ahmedabad or https://…"
+                            {...field}
+                          />
                         </FormControl>
                         <p className="text-xs text-muted-foreground">
-                          In Google Maps: search the exact location → Share → Embed a map → copy the
-                          src URL from the code and paste it here for a precise pin. Leave blank to
-                          show a map based on city/locality instead.
+                          Type an address, paste a Google Maps embed URL, or click <strong>Auto-generate</strong> to build it from City, Locality, State, and Studio address above.
                         </p>
                         <FormMessage />
+
+                        <div className="mt-3 overflow-hidden rounded-xl border border-border bg-card p-3 shadow-sm">
+                          <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
+                            <span className="font-semibold text-foreground flex items-center gap-1.5">
+                              <MapPin className="h-3.5 w-3.5 text-primary" aria-hidden="true" /> Live Map Preview
+                            </span>
+                            <a
+                              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(field.value || derivedLocationQuery)}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-primary hover:underline font-medium inline-flex items-center gap-1"
+                            >
+                              Test link ↗
+                            </a>
+                          </div>
+                          <iframe
+                            title="Live Map Preview"
+                            src={resolveMapEmbedSrc(field.value, derivedLocationQuery)}
+                            loading="lazy"
+                            className="h-[180px] w-full rounded-lg border-0 bg-muted"
+                          />
+                        </div>
                       </FormItem>
                     )}
                   />

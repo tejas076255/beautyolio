@@ -34,7 +34,7 @@ import { getVideoEmbedSource } from "@/lib/video-embed";
 // dashboard's manual Add Lead form can never enforce divergent phone
 // rules. The RPC (submit_lead) remains the authoritative server-side
 // check for this route — this is a client-side convenience only.
-import { isValidPhone } from "@/lib/phone";
+import { isValidPhone, formatWhatsappNumber } from "@/lib/phone";
 import { AnalyticsEvent, CtaLocation, trackEvent, type CtaLocationValue } from "@/lib/analytics";
 import { getAttributionSnapshot, getConversionPath, recordCtaClick } from "@/lib/attribution";
 
@@ -72,10 +72,11 @@ const submitPortfolioLeadFn = createServerFn({ method: "POST" })
 type P = { profile: BeauticianProfile };
 
 export function waLink(profile: BeauticianProfile, message?: string) {
+  const whatsappNumber = formatWhatsappNumber(profile.whatsapp);
   const text =
     message ??
     `Hi ${profile.name.split(" ")[0]}, I'd like to check your availability for my function.`;
-  return `https://wa.me/${profile.whatsapp}?text=${encodeURIComponent(text)}`;
+  return `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(text)}`;
 }
 
 const telLink = (profile: BeauticianProfile) => `tel:${profile.phone.replace(/\s/g, "")}`;
@@ -132,14 +133,32 @@ function trackPhoneClick(profile: BeauticianProfile, ctaLocation: CtaLocationVal
  * a full pasted <iframe> snippet and normalizes it on save. This defends
  * the public render against any already-stored un-normalized value too, so
  * a fix on the dashboard side doesn't require every profile to be re-saved. */
-function resolveMapEmbedSrc(mapQuery: string): string {
-  let value = mapQuery.trim();
+export function resolveMapEmbedSrc(mapQuery: string, fallbackAddress?: string): string {
+  let value = (mapQuery || "").trim();
   if (value.includes("<iframe")) {
-    value = value.match(/src="([^"]+)"/)?.[1] ?? value;
+    const match = value.match(/src="([^"]+)"/);
+    if (match?.[1]) return match[1];
   }
-  return value.startsWith("https://www.google.com/maps/embed")
-    ? value
-    : `https://www.google.com/maps?q=${encodeURIComponent(value)}&output=embed`;
+  if (
+    value.startsWith("https://www.google.com/maps/embed") ||
+    value.startsWith("https://maps.google.com/maps/embed")
+  ) {
+    return value;
+  }
+
+  let query = value || fallbackAddress || "";
+  if (!query) return "https://maps.google.com/maps?q=India&t=&z=5&ie=UTF8&iwloc=&output=embed";
+
+  // If query is a raw address/locality and does not contain country context, add "India"
+  if (
+    !query.startsWith("http://") &&
+    !query.startsWith("https://") &&
+    !query.toLowerCase().includes("india")
+  ) {
+    query = `${query}, India`;
+  }
+
+  return `https://maps.google.com/maps?q=${encodeURIComponent(query)}&t=&z=14&ie=UTF8&iwloc=&output=embed`;
 }
 
 function SectionHead({
@@ -1981,11 +2000,24 @@ export function AvailabilitySection({
 
           <div
             id="location"
-            className="mt-4 overflow-hidden rounded-3xl border border-border shadow-lift"
+            className="mt-4 overflow-hidden rounded-3xl border border-border shadow-lift bg-card"
           >
+            <div className="flex items-center justify-between border-b border-border/50 px-4 py-2.5 bg-muted/30 text-xs text-muted-foreground">
+              <span className="font-medium text-foreground flex items-center gap-1.5">
+                <MapPin className="h-3.5 w-3.5 text-primary" aria-hidden="true" /> Location Map
+              </span>
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(profile.mapQuery || profile.studio || profile.primaryCity)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-primary hover:underline font-medium"
+              >
+                Open in Maps ↗
+              </a>
+            </div>
             <iframe
               title={`Map showing ${profile.name}'s studio in ${profile.primaryCity}`}
-              src={resolveMapEmbedSrc(profile.mapQuery)}
+              src={resolveMapEmbedSrc(profile.mapQuery, profile.studio)}
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
               className="h-[240px] w-full border-0 sm:h-[320px]"

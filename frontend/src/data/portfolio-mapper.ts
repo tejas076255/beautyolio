@@ -16,6 +16,7 @@ import {
   type MediaAltContext,
 } from "@/lib/media-alt-text";
 import { buildSameAs, computeAggregateRating, resolveServiceSlug } from "@/lib/seo-helpers";
+import { formatWhatsappNumber } from "@/lib/phone";
 
 const GALLERY_CATEGORIES: readonly GalleryCategory[] = [
   "bridal",
@@ -283,7 +284,7 @@ export function mapPortfolioBundleToProfile(bundle: PortfolioBundle): Beautician
     areas,
     travelNote: profile.travel_note ?? "",
     phone: profile.phone || profile.whatsapp_number || "",
-    whatsapp: (profile.whatsapp_number || profile.phone || "").replace(/\D/g, ""),
+    whatsapp: formatWhatsappNumber(profile.whatsapp_number || profile.phone || ""),
     email: profile.email ?? "",
     studio:
       profile.address?.trim() ||
@@ -295,7 +296,10 @@ export function mapPortfolioBundleToProfile(bundle: PortfolioBundle): Beautician
       bundle.availability?.working_hours_note?.trim() ||
       "Mon – Sat: 10:00 AM – 7:00 PM",
     mapQuery:
-      profile.map_query ?? [profile.locality, profile.primary_city].filter(Boolean).join(", "),
+      profile.map_query?.trim() ||
+      [profile.address, profile.locality, profile.primary_city, profile.state, profile.country || "India"]
+        .filter(Boolean)
+        .join(", "),
     trustBar,
     businessName: profile.business_name,
     sameAs: buildSameAs({

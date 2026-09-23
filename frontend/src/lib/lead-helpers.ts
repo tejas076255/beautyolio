@@ -7,6 +7,8 @@
 // consistent, honest default rather than a guessed/hard-coded timezone.
 // Documented in docs/BEAUTYFOLIO-PHASE3E-CRM-ACTION-CENTER.md.
 
+import { formatWhatsappNumber } from "./phone";
+
 function startOfDay(d: Date): Date {
   return new Date(d.getFullYear(), d.getMonth(), d.getDate());
 }
@@ -63,9 +65,10 @@ export function telLink(phone: string | null): string | null {
 
 export function waLink(phone: string | null, name: string | null): string | null {
   if (!phone) return null;
-  const digits = phone.replace(/[^\d+]/g, "");
+  const digits = formatWhatsappNumber(phone);
+  if (!digits) return null;
   const text = encodeURIComponent(`Hi ${name ?? "there"}, following up on your enquiry.`);
-  return `https://wa.me/${digits.replace(/^\+/, "")}?text=${text}`;
+  return `https://wa.me/${digits}?text=${text}`;
 }
 
 export function mailLink(email: string | null): string | null {

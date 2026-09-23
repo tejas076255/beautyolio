@@ -18,3 +18,22 @@ export function isValidPhone(value: string): boolean {
 }
 
 export const INVALID_PHONE_MESSAGE = "Enter a valid phone number.";
+
+/**
+ * Formats a phone number for WhatsApp wa.me links.
+ * WhatsApp requires an international format without + or leading zeros.
+ * For 10-digit Indian numbers without country code, automatically prepends '91'.
+ */
+export function formatWhatsappNumber(phone: string | null | undefined): string {
+  if (!phone) return "";
+  const digits = phone.replace(/\D/g, "");
+  if (!digits) return "";
+  if (digits.length === 10) {
+    return `91${digits}`;
+  }
+  if (digits.length === 11 && digits.startsWith("0")) {
+    return `91${digits.slice(1)}`;
+  }
+  return digits;
+}
+
