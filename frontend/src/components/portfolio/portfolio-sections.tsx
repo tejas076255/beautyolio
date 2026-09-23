@@ -76,7 +76,7 @@ export function waLink(profile: BeauticianProfile, message?: string) {
   const text =
     message ??
     `Hi ${profile.name.split(" ")[0]}, I'd like to check your availability for my function.`;
-  return `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(text)}`;
+  return `https://api.whatsapp.com/send?phone=${whatsappNumber}&text=${encodeURIComponent(text)}`;
 }
 
 const telLink = (profile: BeauticianProfile) => `tel:${profile.phone.replace(/\s/g, "")}`;

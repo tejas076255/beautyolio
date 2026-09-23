@@ -382,7 +382,7 @@ function ServicePage() {
   };
 
   const waHref = profile.whatsapp_number
-    ? `https://wa.me/${formatWhatsappNumber(profile.whatsapp_number)}?text=${encodeURIComponent(
+    ? `https://api.whatsapp.com/send?phone=${formatWhatsappNumber(profile.whatsapp_number)}&text=${encodeURIComponent(
         `Hi ${professionalName.split(" ")[0]}, I'd like to check availability for ${service.name}.`,
       )}`
     : null;

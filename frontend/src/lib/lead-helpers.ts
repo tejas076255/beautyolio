@@ -68,7 +68,7 @@ export function waLink(phone: string | null, name: string | null): string | null
   const digits = formatWhatsappNumber(phone);
   if (!digits) return null;
   const text = encodeURIComponent(`Hi ${name ?? "there"}, following up on your enquiry.`);
-  return `https://wa.me/${digits}?text=${text}`;
+  return `https://api.whatsapp.com/send?phone=${digits}&text=${text}`;
 }
 
 export function mailLink(email: string | null): string | null {
