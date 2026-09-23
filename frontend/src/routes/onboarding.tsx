@@ -66,7 +66,7 @@ const uploadImageFn = createServerFn({ method: "POST" })
       throw new Error(`Image is too large — please keep it under ${MAX_MB}MB.`);
     }
 
-    const ext = mimeType.split("/")[1].replace("jpeg", "jpg");
+    const ext = (mimeType.split("/")[1] ?? "jpg").replace("jpeg", "jpg");
     const safeName = data.filename.replace(/[^a-zA-Z0-9.\-_]/g, "_");
     const path = `profiles/${data.slug}/${data.category}/${Date.now()}-${safeName}.${ext}`;
 

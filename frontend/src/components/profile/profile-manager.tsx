@@ -601,8 +601,9 @@ export function ProfileManager({
       const items = e.clipboardData?.items;
       if (items) {
         for (let i = 0; i < items.length; i++) {
-          if (items[i].type.startsWith("image/")) {
-            const file = items[i].getAsFile();
+          const item = items[i];
+          if (item && item.type.startsWith("image/")) {
+            const file = item.getAsFile();
             if (file) {
               e.preventDefault();
               await uploadPhotoFile(file);

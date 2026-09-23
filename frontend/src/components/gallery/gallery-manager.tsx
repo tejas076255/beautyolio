@@ -85,8 +85,9 @@ function ImageDropzone({
     if (!items) return;
     const pastedFiles: File[] = [];
     for (let i = 0; i < items.length; i++) {
-      if (items[i].type.startsWith("image/")) {
-        const file = items[i].getAsFile();
+      const item = items[i];
+      if (item && item.type.startsWith("image/")) {
+        const file = item.getAsFile();
         if (file) pastedFiles.push(file);
       }
     }

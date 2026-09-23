@@ -94,8 +94,9 @@ function SingleImageDropzone({
     const items = e.clipboardData?.items;
     if (!items) return;
     for (let i = 0; i < items.length; i++) {
-      if (items[i].type.startsWith("image/")) {
-        const pasted = items[i].getAsFile();
+      const item = items[i];
+      if (item && item.type.startsWith("image/")) {
+        const pasted = item.getAsFile();
         if (pasted) {
           e.preventDefault();
           onFileChange(pasted);
