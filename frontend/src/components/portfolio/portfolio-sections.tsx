@@ -322,27 +322,31 @@ export function PortfolioHeroSection({ profile }: P) {
           </ul>
         </div>
 
-        <div className="brand-arc relative mx-auto mt-2 w-full max-w-md text-primary lg:mt-0">
+        <div className="brand-arc relative mx-auto mt-4 w-full max-w-[280px] sm:max-w-[320px] lg:max-w-[340px] text-primary lg:mt-0">
           {profile.portrait ? (
-            <img
-              src={profile.portrait}
-              alt={`${profile.name}, ${profile.role} in ${profile.primaryCity}`}
-              width={900}
-              height={1100}
-              fetchPriority="high"
-              decoding="async"
-              className="aspect-[4/5] w-full rounded-3xl object-cover object-top shadow-lift"
-            />
+            <div className="overflow-hidden rounded-3xl border border-border/40 bg-card p-2 shadow-lift">
+              <img
+                src={profile.portrait}
+                alt={`${profile.name}, ${profile.role} in ${profile.primaryCity}`}
+                width={900}
+                height={1100}
+                fetchPriority="high"
+                decoding="async"
+                className="aspect-[4/5] w-full rounded-2xl object-cover object-center"
+              />
+            </div>
           ) : (
-            <img
-              src="/default-profile-avatar.jpg"
-              alt={`${profile.name}, ${profile.role} in ${profile.primaryCity}`}
-              width={900}
-              height={1100}
-              fetchPriority="high"
-              decoding="async"
-              className="aspect-[4/5] w-full rounded-3xl object-cover object-center shadow-lift"
-            />
+            <div className="overflow-hidden rounded-3xl border border-border/40 bg-card p-2 shadow-lift">
+              <img
+                src="/default-profile-avatar.jpg"
+                alt={`${profile.name}, ${profile.role} in ${profile.primaryCity}`}
+                width={900}
+                height={1100}
+                fetchPriority="high"
+                decoding="async"
+                className="aspect-[4/5] w-full rounded-2xl object-cover object-center"
+              />
+            </div>
           )}
           {/* Phase 3G.1 §21 — was static, unverified "Next available
               date: Booking for this wedding season" copy with no real
