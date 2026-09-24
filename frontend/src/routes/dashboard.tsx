@@ -284,6 +284,12 @@ function DashboardLayout() {
     }
   }, [ensureQuery.isError, isAuthError, navigate]);
 
+  useEffect(() => {
+    if (profileQuery.isSuccess && !profileQuery.data?.professional_title?.trim()) {
+      navigate({ to: "/onboarding", replace: true });
+    }
+  }, [profileQuery.isSuccess, profileQuery.data?.professional_title, navigate]);
+
 
 
   if (!checked || (!ensureQuery.isSuccess && !ensureQuery.isError) || profileQuery.isLoading) {
