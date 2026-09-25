@@ -106,7 +106,7 @@ const getOnboardingContextFn = createServerFn({ method: "GET" })
       profile_image_url: profile.profile_image_url ?? null,
       cover_image_url: profile.cover_image_url ?? null,
       // Already onboarded if they have a title
-      alreadyOnboarded: !!profile.professional_title,
+      alreadyOnboarded: !!profile.professional_title?.trim(),
     };
   });
 

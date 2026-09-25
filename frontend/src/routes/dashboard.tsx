@@ -287,10 +287,15 @@ function DashboardLayout() {
   useEffect(() => {
     if (profileQuery.isSuccess && !profileQuery.data?.professional_title?.trim()) {
       navigate({ to: "/onboarding", replace: true });
+      const timer = setTimeout(() => {
+        if (window.location.pathname.startsWith("/dashboard")) {
+          window.location.replace("/onboarding");
+        }
+      }, 250);
+      return () => clearTimeout(timer);
     }
+    return undefined;
   }, [profileQuery.isSuccess, profileQuery.data?.professional_title, navigate]);
-
-
 
   if (!checked || (!ensureQuery.isSuccess && !ensureQuery.isError) || profileQuery.isLoading) {
     return (
@@ -315,10 +320,19 @@ function DashboardLayout() {
     );
   }
 
-  if (profileQuery.isSuccess && !profileQuery.data?.professional_title) {
+  if (profileQuery.isSuccess && !profileQuery.data?.professional_title?.trim()) {
     return (
-      <div className="flex min-h-screen items-center justify-center text-sm text-muted-foreground">
-        Redirecting to onboarding…
+      <div className="flex min-h-screen flex-col items-center justify-center gap-3 text-sm text-muted-foreground">
+        <span>Redirecting to onboarding…</span>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => {
+            window.location.replace("/onboarding");
+          }}
+        >
+          Click here to continue
+        </Button>
       </div>
     );
   }
